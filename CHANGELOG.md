@@ -5,6 +5,63 @@ All notable changes to NOAIS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-06-07
+
+### Added
+
+- **Per-site settings** via a new full-tab **Options page** (`options/options.html` + `options.css` + `options.js`).
+  - **Sensitivity slider** (0–100, default 100) scales the heuristic AI-likely score. At 0 the score is always 0; at 100 it is the raw stylometric value. Affects only the score, not the phrase counter.
+  - **Per-site list** of curated hosts (YouTube, Facebook, Instagram, TikTok, Twitter/X, Reddit, LinkedIn) with per-site ON/OFF switches.
+  - **Add custom site** field — type a hostname (e.g. `example.com`) and click **Add**, it joins the user's overrides list.
+  - **Light + dark mode**, self-contained CSS (no build step).
+  - **Auto-save** on every change; live `chrome.storage.onChanged` sync between popup, options, and content scripts.
+  - **Open from popup** via footer link using `chrome.runtime.openOptionsPage()` with `chrome.tabs.create` fallback (Firefox-AMO-safe).
+- **Curated hosts as code constant** (`core/settings.js`, `CURATED_HOSTS` array). User overrides live in storage; the merge happens at read time so future v0.4.x can add a new host without any data migration.
+- **Hostname matching** (`core/settings.js`): suffix-only, supports `youtube.com` matching `m.youtube.com` etc. No wildcards in v0.4.
+- **Storage schema (additive, no migration needed)**:
+  ```json
+  {
+    "noais_enabled": true,                              // unchanged from v0.1
+    "noais_global_sensitivity": 100,                    // NEW: 0–100, default 100
+    "noais_site_overrides": { "example.com": false }    // NEW: user overrides only
+  }
+  ```
+- **Content script v0.4.0** (`content/content.js`):
+  - Reads `noais_enabled`, `noais_global_sensitivity`, and the per-site override for the current tab.
+  - **Early-returns** `{ ok:false, disabled:true, reason:"Site disabled" }` for sites the user has turned off, so the popup shows "Off" instead of a score.
+  - Passes `effective.sensitivity` through to `analyzeText(text, { sensitivity })`.
+  - **Live updates** via `chrome.storage.onChanged` — toggling a site in the options page is reflected on the next message round-trip without a reload.
+- **Popup v0.4.0**:
+  - **"On this site"** section showing **ON** / **OFF** / **N/A** for the current tab's host.
+  - **Open Settings** footer link to the options page.
+  - **Dark-mode score-bar fix** (v0.3 regression: `.score-bar-fill.zero` had no dark-mode override; now both light and dark themes are colour-correct).
+- **Manifest v0.4.0**:
+  - `options_ui: { page: "options/options.html", open_in_tab: true }`.
+  - **`"key"` field** (PKCS#8 RSA 2048-bit, 1624-char base64) — gives the extension a **stable ID** across unpacked reloads: `jbllajhognjaknnofagmmladkdicojgg`. Verified stable across headless runs in CI.
+  - `strict_min_version` raised from `109.0` → **`121.0`** (Firefox MV3 service-worker requirement).
+  - `content_scripts` ordering: `core/heuristics.js`, `core/settings.js`, `content/content.js`.
+- **Test infrastructure**:
+  - `tests/run.js` — a 60-line plain-Node mini-runner (no deps, `node:assert` only). 94 tests.
+  - **`Makefile`** with `test`, `test-headless`, `test-all`, `lint`, `validate`, `backup VERSION=vX.Y`, `clean`.
+  - **`tests/headless-integration.sh`** — 14-assertion bash test that loads the extension in headless Chromium, runs both AI and human fixtures, captures the extension ID, and asserts the v0.4 content-script behaviour end-to-end.
+
+### Quality
+- **All tests green**: **94 Node tests + 14 headless assertions = 108 / 108**.
+- **End-to-end headless** (`make test-headless`):
+  - Stable extension ID `jbllajhognjaknnofagmmladkdicojgg` (same in both runs).
+  - AI fixture: `score=81/100, words=436, phrases: 0, sensitivity: 100` (red bar).
+  - Human fixture: `score=23/100, words=380, phrases: 0, sensitivity: 100` (green bar). **58-point separation preserved**.
+  - Background service worker fires, content script loads, settings storage read completes, heuristics module loads, site is NOT disabled by default.
+- **XSS discipline** preserved: every user-controllable string in `options.js`, `popup.js`, and `content.js` is rendered via `textContent`, never `innerHTML`. Enforced by 4 static-grep tests.
+- **Hostname parser** restricted to `http:`/`https:` (defensive against Node 18 vs Chromium URL-parser discrepancy for `chrome://`, `file://`, `about:`).
+- **Defensive `chrome.runtime.lastError`** checks on both read and write paths in `popup.js`.
+- **TDD** — every v0.4 commit was preceded by a failing test, then made green.
+
+### Notes
+- The "Add custom site" feature is **additive only** — it cannot remove a curated host. To turn off YouTube for everyone, the curated list in v0.5+ will be editable.
+- **No migration** is needed from v0.3 → v0.4. Existing `noais_enabled` values are preserved. New keys default to `100` sensitivity and no overrides.
+- The **stable extension ID** is only stable for *unpacked* loads. As soon as you package and install via Chrome Web Store, the ID will be the CWS-assigned one — but for local development, the ID is now `jbllajhognjaknnofagmmladkdicojgg` everywhere, every time.
+
 ## [0.3.0] - 2026-06-07
 
 ### Added

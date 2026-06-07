@@ -1,4 +1,4 @@
-/* NOAIS popup styles - v0.3.0 */
+/* NOAIS popup styles - v0.4.0 */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -201,6 +201,50 @@ input:focus-visible + .slider {
   margin-top: 2px;
 }
 
+.site-section {
+  margin-top: 14px;
+  padding: 12px 0 4px 0;
+  border-top: 1px solid #f3f4f6;
+  text-align: center;
+}
+
+.site-status {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 4px;
+  color: #111827;
+  font-variant-numeric: tabular-nums;
+}
+
+.site-status.on {
+  color: #10b981;
+}
+
+.site-status.off {
+  color: #9ca3af;
+}
+
+.site-status.na {
+  color: #9ca3af;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.site-hostname {
+  font-size: 10px;
+  color: #9ca3af;
+  letter-spacing: 0.3px;
+  word-break: break-all;
+  max-width: 240px;
+  margin: 0 auto;
+  min-height: 0;
+}
+
+.site-hostname:empty {
+  display: none;
+}
+
 footer {
   margin-top: 16px;
   text-align: center;
@@ -211,6 +255,21 @@ footer {
   font-weight: 500;
   color: #9ca3af;
   letter-spacing: 0.5px;
+}
+
+.footer-link {
+  color: #4F46E5;
+  text-decoration: underline;
+}
+
+.footer-link:hover {
+  color: #4338ca;
+}
+
+.footer-link:focus-visible {
+  outline: 2px solid #4F46E5;
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -248,6 +307,29 @@ footer {
   .scan-count.error {
     color: #6b7280;
   }
+  .word-count {
+    color: #6b7280;
+  }
+  .site-section {
+    border-color: #374151;
+  }
+  .site-status {
+    color: #f9fafb;
+  }
+  .site-status.on {
+    color: #34d399;
+  }
+  .site-status.off,
+  .site-status.na {
+    color: #6b7280;
+  }
+  .site-hostname {
+    color: #6b7280;
+  }
+  /* v0.3 bug fix: score-bar-fill had no dark-mode overrides. */
+  .score-bar-fill.zero { background: #34d399; }
+  .score-bar-fill.low  { background: #fbbf24; }
+  .score-bar-fill.high { background: #f87171; }
   .subtitle {
     color: #9ca3af;
   }

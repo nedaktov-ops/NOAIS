@@ -106,10 +106,17 @@
   /**
    * Analyse a body of text and return a 0-100 AI-likely score plus the raw
    * metric values. Returns score=0 for text shorter than 50 words.
+   *
+   * Options (optional, all keys optional):
+   *   sensitivity - integer 0-100, default 100. The raw score is multiplied
+   *                 by (sensitivity / 100) and clamped to [0, 100] before
+   *                 rounding. 0 forces the score to 0; 200 caps at 100.
+   *
    * @param {string} text
+   * @param {{sensitivity?:number}} [options]
    * @returns {{score:number, wordCount:number, breakdown:object}}
    */
-  function analyzeText(text) {
+  function analyzeText(text, options) {
     const words = tokenize(text);
     const wordCount = words.length;
 
@@ -136,7 +143,14 @@
 
     // Weighted average.
     const score01 = bScore * 0.3 + tScore * 0.25 + eScore * 0.25 + hScore * 0.2;
-    const score = Math.round(clamp(score01, 0, 1) * 100);
+
+    // Apply sensitivity multiplier. Default 100 = no change. 0 -> score=0.
+    const sensitivity = (options && typeof options.sensitivity === 'number')
+      ? options.sensitivity
+      : 100;
+    const multiplier = clamp(sensitivity, 0, 1000) / 100;
+    const final01 = clamp(score01 * multiplier, 0, 1);
+    const score = Math.round(final01 * 100);
 
     return {
       score,
@@ -152,6 +166,7 @@
           entropy: Number(eScore.toFixed(3)),
           hapaxRatio: Number(hScore.toFixed(3)),
         },
+        sensitivity: Number(sensitivity),
       },
     };
   }
