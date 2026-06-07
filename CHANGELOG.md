@@ -5,6 +5,38 @@ All notable changes to NOAIS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-06-07
+
+### Added
+- **Heuristic analysis engine** (`core/heuristics.js`, 163 lines, zero dependencies, no models).
+  Exposes `window.NOAIS_HEURISTICS.analyzeText(text)` returning `{ score, wordCount, breakdown }`.
+- **Four stylometric metrics**, each normalised to a 0–1 "AI-likely" sub-score, then weighted-averaged into a final **0–100 AI-likely score**:
+  1. **Burstiness** (weight 0.30) — stddev / mean of sentence word-lengths. Humans ~0.8, AI ~0.3.
+  2. **Type-Token Ratio** (weight 0.25) — unique / total words. Humans ~0.6, AI ~0.3.
+  3. **Shannon Entropy** (weight 0.25) — unpredictability of word distribution (base 2). Humans ~10, AI ~7.
+  4. **Hapax Ratio** (weight 0.20) — words used exactly once / unique words. Humans ~0.7, AI ~0.3.
+- **Content script** (`content/content.js`) now returns `{ ok, count, score, wordCount, breakdown }` on `NOAIS_ANALYZE_PAGE` messages. Falls back to `{ ok:false, error }` if the heuristics module fails to load.
+- **Popup UI**:
+  - New "AI-likely score" section showing `NN%` with a colour-coded bar (green ≤30, amber 31–60, red 61+).
+  - Word count line ("385 words analysed") for transparency.
+  - Existing phrase count kept for backwards compatibility.
+- **Manifest v0.3.0**: loads `core/heuristics.js` before `content/content.js` so `window.NOAIS_HEURISTICS` is available when the content script runs.
+
+### Quality
+- **End-to-end automated test** in headless Chromium 148 (`--load-extension`):
+  - Human-style fixture (`/tmp/noais-test-human.html`, 380 words, personal blog about selling a car): **`phrases: 0, score: 23/100, words: 380`** → green ("zero" severity).
+  - AI-style fixture (`/tmp/noais-test-ai.html`, 436 words, formulaic listicle with repeated "It is important to note", "Furthermore", "Additionally"): **`phrases: 0, score: 81/100, words: 436`** → red ("high" severity).
+  - 58-point clear separation; all four metrics discriminate correctly.
+- **Standalone Node test** (`/tmp/noais-heuristic-test.js`) using `vm` sandbox with a fake `window` — same scores as headless (22/81), confirming the engine is framework-independent and testable.
+- JS syntax: `node --check` passes on all four files.
+- Manifest JSON: `jq empty` passes, version bumped to 0.3.0.
+
+### Notes
+- Detection is **statistical**, not semantic — works on word-level patterns, not meaning. Trivially fooled by heavily edited AI text or a sufficiently well-prompted model that uses high-burstiness structure.
+- **Minimum length**: text under 50 words returns `score: 0` with `breakdown.reason: "Text too short for analysis"`. The hard-coded phrase counter still works on short text.
+- **Thresholds are educated guesses** derived from published stylometric studies. v0.7 may tune them with a real ML model trained on labelled corpora.
+- v0.3 keeps v0.2 phrase counting active for free. They are complementary: phrases catch obvious tells, heuristics catch subtle patterns.
+
 ## [0.2.0] - 2026-06-07
 
 ### Added

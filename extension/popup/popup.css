@@ -1,4 +1,4 @@
-/* NOAIS popup styles - v0.1.0 */
+/* NOAIS popup styles - v0.3.0 */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -119,7 +119,7 @@ input:focus-visible + .slider {
   text-align: center;
 }
 
-.scan-label {
+.section-label {
   font-size: 11px;
   font-weight: 500;
   color: #6b7280;
@@ -154,6 +154,53 @@ input:focus-visible + .slider {
   font-weight: 500;
 }
 
+.score-section {
+  margin-top: 16px;
+  text-align: center;
+}
+
+.score-value {
+  font-size: 40px;
+  font-weight: 800;
+  color: #111827;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  margin: 2px 0 8px 0;
+}
+
+.score-value.zero { color: #10b981; }
+.score-value.low  { color: #f59e0b; }
+.score-value.high { color: #ef4444; }
+.score-value.error { color: #9ca3af; font-size: 16px; font-weight: 600; }
+
+.score-bar {
+  height: 6px;
+  background: #f3f4f6;
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 0 auto 8px auto;
+  max-width: 220px;
+}
+
+.score-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: #4F46E5;
+  transition: width 0.4s ease, background-color 0.4s ease;
+  border-radius: 3px;
+}
+
+.score-bar-fill.zero { background: #10b981; }
+.score-bar-fill.low  { background: #f59e0b; }
+.score-bar-fill.high { background: #ef4444; }
+
+.word-count {
+  font-size: 10px;
+  color: #9ca3af;
+  letter-spacing: 0.3px;
+  margin-top: 2px;
+}
+
 footer {
   margin-top: 16px;
   text-align: center;
@@ -183,7 +230,7 @@ footer {
   .scan-section {
     border-color: #374151;
   }
-  .scan-label {
+  .section-label {
     color: #9ca3af;
   }
   .scan-count {

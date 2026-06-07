@@ -17,15 +17,13 @@ The web is filling up with low-quality, auto-generated "slop" — text, images, 
 
 ## Features (current)
 
-- **v0.2.0** (current): Scans every page for 5 hard-coded AI-typical phrases ("As an AI language model", "I am an AI", etc.) and shows a colour-coded count in the popup. Content script + message passing + live count.
+- **v0.3.0** (current): Heuristic AI-likely scoring (0–100) using four stylometric metrics — burstiness, type-token ratio, Shannon entropy, hapax ratio. Combined with v0.2's hard-coded phrase counter. Validated: human text 23/100 (green), AI text 81/100 (red). 100% on-device, zero dependencies, no models.
+- v0.2.0: Scans every page for 5 hard-coded AI-typical phrases ("As an AI language model", "I am an AI", etc.) and shows a colour-coded count in the popup. Content script + message passing + live count.
 - v0.1.0: Hello-world popup with working enable/disable toggle that persists across browser restarts. 100% on-device. Zero network calls. Dark-mode aware. Accessible (ARIA labels, keyboard focus).
 - v0.0.0: Project initialised.
 
 ## Features (planned)
 
-- v0.1: Hello-world popup with toggle
-- v0.2: Detect common AI phrases in page text
-- v0.3: Heuristic scoring (burstiness, entropy) — no models, 100% on-device
 - v0.4: Per-site settings, sensitivity slider
 - v0.5: YouTube adapter (comments, descriptions)
 - v0.6: Facebook adapter (posts, comments)
@@ -65,17 +63,21 @@ cd NOAIS
 3. Select `extension/manifest.json` from this repo
 4. Click the NOAIS icon in the toolbar → popup appears
 
-### File layout (v0.1)
+### File layout (v0.3)
 
 ```
 extension/
-├── manifest.json          (MV3, Chrome + Firefox compatible)
+├── manifest.json          (MV3, Chrome + Firefox compatible, v0.3.0)
 ├── background/
 │   └── background.js      (service worker, logs install)
+├── core/
+│   └── heuristics.js      (stylometric analysis, 0–100 AI score)
+├── content/
+│   └── content.js         (page scanner, phrase counter, message handler)
 ├── popup/
-│   ├── popup.html
+│   ├── popup.html         (score bar + phrase count + toggle)
 │   ├── popup.css          (light + dark mode)
-│   └── popup.js           (toggle + chrome.storage.local)
+│   └── popup.js           (toggle + chrome.storage.local + score render)
 └── icons/
     ├── icon.svg           (source)
     ├── icon-16.png

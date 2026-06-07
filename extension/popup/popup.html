@@ -13,6 +13,20 @@
       <p class="subtitle">No Artificial Intelligence Slop</p>
     </header>
 
+    <section class="score-section" aria-labelledby="score-label">
+      <p class="section-label" id="score-label">AI-likely score</p>
+      <p class="score-value" id="score-value" aria-live="polite" aria-atomic="true">…</p>
+      <div class="score-bar" aria-hidden="true">
+        <div class="score-bar-fill" id="score-bar-fill"></div>
+      </div>
+      <p class="word-count" id="word-count"></p>
+    </section>
+
+    <section class="scan-section" aria-labelledby="scan-label">
+      <p class="section-label" id="scan-label">Hard-coded AI phrases</p>
+      <p class="scan-count" id="scan-count" aria-live="polite" aria-atomic="true">…</p>
+    </section>
+
     <section class="toggle-section" aria-labelledby="toggle-label">
       <label class="switch" for="toggle">
         <input type="checkbox" id="toggle" aria-labelledby="toggle-label">
@@ -21,13 +35,8 @@
       <span id="toggle-label" class="status" aria-live="polite">Inactive</span>
     </section>
 
-    <section class="scan-section" aria-labelledby="scan-label">
-      <p class="scan-label" id="scan-label">AI phrases on this page</p>
-      <p class="scan-count" id="scan-count" aria-live="polite" aria-atomic="true">…</p>
-    </section>
-
     <footer>
-      <p class="version">v0.2.0</p>
+      <p class="version">v0.3.0</p>
     </footer>
   </main>
   <script src="popup.js"></script>

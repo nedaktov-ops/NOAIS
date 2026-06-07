@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "NOAIS",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "NOAIS (No Artificial Intelligence Slop) - detect, mask, and disable AI-generated content on the web.",
 
   "action": {
@@ -33,7 +33,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content/content.js"],
+      "js": ["core/heuristics.js", "content/content.js"],
       "run_at": "document_idle",
       "all_frames": false
     }
