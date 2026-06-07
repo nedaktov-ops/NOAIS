@@ -12,7 +12,7 @@ HEADLESS := bash tests/headless-integration.sh
 JS_FILES := $(shell find extension -name '*.js' 2>/dev/null)
 HTML_FILES := $(shell find extension -name '*.html' 2>/dev/null)
 
-.PHONY: help test test-headless test-all lint validate backup clean
+.PHONY: help test test-headless test-all lint validate backup clean package
 
 help:
 	@echo "NOAIS make targets:"
@@ -21,6 +21,7 @@ help:
 	@echo "  make test-all      - run both"
 	@echo "  make lint          - jq + node --check on all JS/HTML"
 	@echo "  make validate      - lint + test-all"
+	@echo "  make package       - build dist/NOAIS-v<version>-{chrome,firefox}.zip from extension/"
 	@echo "  make backup VERSION=vX.Y - copy repo to ~/NOAIS-backups/"
 	@echo "  make clean         - remove /tmp test artefacts"
 
@@ -42,6 +43,23 @@ lint:
 	@echo "  lint: OK"
 
 validate: lint test-all
+
+# Build distribution zips. Both Chrome and Firefox accept a plain zip of the
+# extension/ directory; the manifest is MV3 + browser_specific_settings.gecko
+# so the same zip works in both. We just produce two files for clarity.
+package:
+	@VERSION=$$(jq -r .version extension/manifest.json); \
+	if [ -z "$$VERSION" ] || [ "$$VERSION" = "null" ]; then \
+		echo "  failed to read version from extension/manifest.json"; \
+		exit 2; \
+	fi; \
+	mkdir -p dist; \
+	rm -f dist/NOAIS-v$$VERSION-chrome.zip dist/NOAIS-v$$VERSION-firefox.zip; \
+	echo "  packaging extension/ as NOAIS-v$$VERSION-chrome.zip ..."; \
+	(cd extension && zip -qr ../dist/NOAIS-v$$VERSION-chrome.zip . -x '*.DS_Store'); \
+	cp dist/NOAIS-v$$VERSION-chrome.zip dist/NOAIS-v$$VERSION-firefox.zip; \
+	echo "  built:"; \
+	ls -lh dist/NOAIS-v$$VERSION-*.zip
 
 backup:
 	@if [ -z "$(VERSION)" ]; then \

@@ -1,4 +1,4 @@
-// NOAIS content script - v0.9.0
+// NOAIS content script - v1.0.0
 // Scans the current page for AI-generated content using:
 //   1. Hard-coded AI-phrase counter (v0.2, kept for backwards compat).
 //   2. Heuristic statistical analysis (v0.3, v0.4 sensitivity-aware).
@@ -301,7 +301,7 @@
         ? `DISABLED (site=${r.breakdown && r.breakdown.site})`
         : `score=${r.score}/100, words=${r.wordCount}`;
       const note = settingsLoaded ? '' : ' (settings not yet loaded)';
-      console.log(`[NOAIS content] v0.9.0 loaded on ${location.href}; phrases: ${r.count}, ${status}, sensitivity: ${effective.sensitivity}, hardMode: ${effective.hardMode}${note}`);
+      console.log(`[NOAIS content] v1.0.0 loaded on ${location.href}; phrases: ${r.count}, ${status}, sensitivity: ${effective.sensitivity}, hardMode: ${effective.hardMode}${note}`);
     } catch (e) { /* innerText may throw on detached documents; ignore */ }
   }
 })();
