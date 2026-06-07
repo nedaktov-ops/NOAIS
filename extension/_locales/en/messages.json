@@ -63,6 +63,38 @@
     "message": "Open Settings",
     "description": "Footer link in the popup that opens the full options page."
   },
+  "popup_active": {
+    "message": "Active",
+    "description": "Status text in the popup when NOAIS is enabled (v1.1)."
+  },
+  "popup_inactive": {
+    "message": "Inactive",
+    "description": "Status text in the popup when NOAIS is disabled (v1.1)."
+  },
+  "popup_active_aria": {
+    "message": "NOAIS is active",
+    "description": "aria-label for the active status (v1.1)."
+  },
+  "popup_inactive_aria": {
+    "message": "NOAIS is inactive",
+    "description": "aria-label for the inactive status (v1.1)."
+  },
+  "popup_toggle_site": {
+    "message": "Disable on this site",
+    "description": "Per-site disable button shown in the popup when the current site is one of the curated platforms (v1.1)."
+  },
+  "popup_enable_site": {
+    "message": "Enable on this site",
+    "description": "Per-site enable button shown in the popup when the current site is currently disabled (v1.1)."
+  },
+  "popup_settings_link": {
+    "message": "Settings",
+    "description": "Footer link in the popup that opens the full options page (v1.1, replaces popup_open_settings for the inline link)."
+  },
+  "popup_words_analysed": {
+    "message": "words analysed",
+    "description": "Suffix shown after the word count (v1.1)."
+  },
   "options_title": {
     "message": "NOAIS Settings",
     "description": "Heading at the top of the options page."

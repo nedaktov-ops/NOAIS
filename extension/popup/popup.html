@@ -14,7 +14,7 @@
     </header>
 
     <section class="score-section" aria-labelledby="score-label">
-      <p class="section-label" id="score-label">AI-likely score</p>
+      <p class="section-label" id="score-label">__MSG_popup_score_label__</p>
       <p class="score-value" id="score-value" aria-live="polite" aria-atomic="true">…</p>
       <div class="score-bar" aria-hidden="true">
         <div class="score-bar-fill" id="score-bar-fill"></div>
@@ -23,14 +23,15 @@
     </section>
 
     <section class="scan-section" aria-labelledby="scan-label">
-      <p class="section-label" id="scan-label">Hard-coded AI phrases</p>
+      <p class="section-label" id="scan-label">__MSG_popup_phrases_label__</p>
       <p class="scan-count" id="scan-count" aria-live="polite" aria-atomic="true">…</p>
     </section>
 
     <section class="site-section" aria-labelledby="site-label">
-      <p class="section-label" id="site-label">On this site</p>
+      <p class="section-label" id="site-label">__MSG_popup_site_label__</p>
       <p class="site-status" id="site-status" aria-live="polite" aria-atomic="true">…</p>
       <p class="site-hostname" id="site-hostname"></p>
+      <button type="button" id="toggle-site" class="ghost-button">__MSG_popup_toggle_site__</button>
     </section>
 
     <section class="toggle-section" aria-labelledby="toggle-label">
@@ -38,13 +39,15 @@
         <input type="checkbox" id="toggle" aria-labelledby="toggle-label">
         <span class="slider" aria-hidden="true"></span>
       </label>
-      <span id="toggle-label" class="status" aria-live="polite">Inactive</span>
+      <span id="toggle-label" class="status" aria-live="polite">__MSG_popup_inactive__</span>
     </section>
 
     <footer>
-      <p class="version">v0.4.0 · <a href="#" id="open-settings" class="footer-link">Open Settings</a></p>
+      <p class="version">v1.1.0 · <a href="#" id="open-why" class="footer-link">__MSG_popup_why_link__</a> · <a href="#" id="open-settings" class="footer-link">__MSG_popup_settings_link__</a></p>
     </footer>
   </main>
+  <script src="../core/storage-keys.js"></script>
+  <script src="../core/sync-helper.js"></script>
   <script src="../core/settings.js"></script>
   <script src="popup.js"></script>
 </body>

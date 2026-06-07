@@ -1,11 +1,13 @@
-// NOAIS popup script - v0.4.0
-// - Toggle persistence (chrome.storage.local)
+// NOAIS popup script - v1.1.0
+// - Sync-aware toggle persistence (noais_enabled via NOAIS_SYNC → chrome.storage.sync)
 // - Queries the active tab's content script for full page analysis
 // - Renders the AI-likely score (0-100) with a colour-coded bar
 // - Renders the hard-coded AI phrase count
 // - Renders the word count for transparency
-// - Renders the "On this site: ON/OFF/N/A" status (v0.4)
-// - "Open Settings" link -> chrome.runtime.openOptionsPage() (v0.4)
+// - Renders the "On this site: ON/OFF/N/A" status
+// - "Disable on this site" button → NOAIS_TOGGLE_SITE message (per-tab override)
+// - "Why?" link → OPEN_WHY_PANEL → background opens chrome.sidePanel
+// - "Open Settings" link → chrome.runtime.openOptionsPage()
 
 (function () {
   'use strict';
@@ -14,8 +16,11 @@
     ENABLED: 'noais_enabled',
     SENSITIVITY: 'noais_global_sensitivity',
     OVERRIDES: 'noais_site_overrides',
+    TAB_OVERRIDES: 'noais_tab_overrides',
   };
   const MESSAGE_TYPE = 'NOAIS_ANALYZE_PAGE';
+  const TOGGLE_SITE_TYPE = 'NOAIS_TOGGLE_SITE';
+  const OPEN_WHY_TYPE = 'OPEN_WHY_PANEL';
 
   const toggleEl = document.getElementById('toggle');
   const statusEl = document.getElementById('toggle-label');
@@ -26,10 +31,13 @@
   const siteStatusEl = document.getElementById('site-status');
   const siteHostnameEl = document.getElementById('site-hostname');
   const openSettingsEl = document.getElementById('open-settings');
+  const openWhyEl = document.getElementById('open-why');
+  const toggleSiteEl = document.getElementById('toggle-site');
 
   if (
     !toggleEl || !statusEl || !scoreEl || !scoreBarEl || !wordCountEl ||
-    !countEl || !siteStatusEl || !siteHostnameEl || !openSettingsEl
+    !countEl || !siteStatusEl || !siteHostnameEl || !openSettingsEl ||
+    !openWhyEl || !toggleSiteEl
   ) {
     console.error('NOAIS popup: required DOM elements not found.');
     return;
@@ -44,37 +52,72 @@
   }
   const settings = window.NOAIS_SETTINGS;
 
+  // sync-helper: routes reads/writes to chrome.storage.sync for the 3 sync keys
+  // (noais_enabled, noais_global_sensitivity, noais_hard_mode_sites) and to
+  // chrome.storage.local for everything else.
+  const sync = window.NOAIS_SYNC || null;
+
+  // ----- Localisation ----------------------------------------------------
+
+  function t(key) {
+    try {
+      if (chrome && chrome.i18n && typeof chrome.i18n.getMessage === 'function') {
+        const v = chrome.i18n.getMessage(key);
+        if (v) return v;
+      }
+    } catch (_e) { /* ignore */ }
+    return key;
+  }
+
   // ----- Toggle state ----------------------------------------------------
 
   function renderStatus(enabled) {
     if (enabled) {
-      statusEl.textContent = 'Active';
+      statusEl.textContent = t('popup_active');
       statusEl.classList.add('active');
-      statusEl.setAttribute('aria-label', 'NOAIS is active');
+      statusEl.setAttribute('aria-label', t('popup_active_aria'));
     } else {
-      statusEl.textContent = 'Inactive';
+      statusEl.textContent = t('popup_inactive');
       statusEl.classList.remove('active');
-      statusEl.setAttribute('aria-label', 'NOAIS is inactive');
+      statusEl.setAttribute('aria-label', t('popup_inactive_aria'));
     }
   }
 
   function loadToggleState() {
+    function apply(enabled) {
+      toggleEl.checked = enabled;
+      renderStatus(enabled);
+    }
+    try {
+      if (sync) {
+        sync.get(STORAGE_KEYS.ENABLED, (err, value) => {
+          if (err) { apply(true); return; }
+          apply(value !== false); // missing = true
+        });
+        return;
+      }
+    } catch (_e) { /* fall through */ }
     try {
       chrome.storage.local.get([STORAGE_KEYS.ENABLED], (result) => {
-        const enabled = Boolean(result && result[STORAGE_KEYS.ENABLED]);
-        toggleEl.checked = enabled;
-        renderStatus(enabled);
+        const enabled = (result && result[STORAGE_KEYS.ENABLED]) !== false;
+        apply(enabled);
       });
     } catch (err) {
       console.error('NOAIS popup: failed to load state', err);
-      renderStatus(false);
+      apply(true);
     }
   }
 
   function saveToggleState(enabled) {
     try {
+      if (sync) {
+        sync.set(STORAGE_KEYS.ENABLED, enabled);
+        return;
+      }
+    } catch (_e) { /* fall through */ }
+    try {
       chrome.storage.local.set({ [STORAGE_KEYS.ENABLED]: enabled }, () => {
-        if (chrome.runtime.lastError) {
+        if (chrome.runtime && chrome.runtime.lastError) {
           console.error('NOAIS popup: storage error', chrome.runtime.lastError);
         }
       });
@@ -192,6 +235,45 @@
     }
   }
 
+  // ----- Open Why panel --------------------------------------------------
+
+  function onOpenWhy(event) {
+    event.preventDefault();
+    try {
+      if (chrome && chrome.runtime && typeof chrome.runtime.sendMessage === 'function') {
+        chrome.runtime.sendMessage({ type: OPEN_WHY_TYPE });
+        try { window.close(); } catch (_e) { /* ignore */ }
+        return;
+      }
+    } catch (_e) { /* fall through */ }
+    // Last-resort fallback: open why.html in a new tab. Firefox < 145 falls
+    // through to this path because chrome.sidePanel is undefined there.
+    try {
+      const url = (chrome.runtime.getURL && chrome.runtime.getURL('sidepanel/why.html')) || 'sidepanel/why.html';
+      chrome.tabs.create({ url });
+      try { window.close(); } catch (_e) { /* ignore */ }
+    } catch (err) {
+      console.error('NOAIS popup: failed to open why panel', err);
+    }
+  }
+
+  // ----- Toggle current site (per-site disable) --------------------------
+
+  function onToggleSite() {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const tab = Array.isArray(tabs) && tabs[0];
+      if (!tab || typeof tab.id !== 'number') return;
+      const url = tab.url || '';
+      const hostname = settings ? settings.parseHostname(url) : '';
+      try {
+        chrome.tabs.sendMessage(tab.id, { type: TOGGLE_SITE_TYPE, hostname });
+        try { window.close(); } catch (_e) { /* ignore */ }
+      } catch (err) {
+        console.error('NOAIS popup: failed to send NOAIS_TOGGLE_SITE', err);
+      }
+    });
+  }
+
   // ----- Query active tab ------------------------------------------------
 
   function queryActiveTab() {
@@ -286,4 +368,6 @@
   });
 
   openSettingsEl.addEventListener('click', onOpenSettings);
+  openWhyEl.addEventListener('click', onOpenWhy);
+  toggleSiteEl.addEventListener('click', onToggleSite);
 })();
