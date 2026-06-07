@@ -3,25 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NOAIS Settings</title>
+  <title>__MSG_options_title__</title>
   <link rel="stylesheet" href="options.css">
 </head>
 <body>
   <main class="container">
     <header>
-      <h1 class="title">NOAIS Settings</h1>
-      <p class="subtitle">No Artificial Intelligence Slop</p>
+      <h1 class="title">__MSG_options_title__</h1>
+      <p class="subtitle">__MSG_options_subtitle__</p>
     </header>
 
+    <p class="sync-status" id="sync-status" role="status" aria-live="polite"></p>
+
     <section class="card" aria-labelledby="sensitivity-label">
-      <h2 id="sensitivity-label" class="card-title">Sensitivity</h2>
-      <p class="card-help">
-        Scales the AI-likely score on every page. <strong>Default (100)</strong> shows raw scores.
-        Move left to be more lenient, right to be stricter.
-      </p>
+      <h2 id="sensitivity-label" class="card-title">__MSG_options_sensitivity_card_title__</h2>
+      <p class="card-help">__MSG_options_sensitivity_help__</p>
 
       <div class="slider-row">
-        <label for="sensitivity" class="visually-hidden">Sensitivity</label>
+        <label for="sensitivity" class="visually-hidden">__MSG_options_sensitivity_card_title__</label>
         <input
           type="range"
           id="sensitivity"
@@ -30,45 +29,52 @@
           step="1"
           value="100"
           aria-valuemin="0"
-          aria-valuemax="100"
+          aria-valuamax="100"
           aria-valuenow="100"
           aria-labelledby="sensitivity-label sensitivity-value"
         >
-        <span id="sensitivity-value" class="sensitivity-value" aria-live="polite" aria-atomic="true">Default</span>
+        <span id="sensitivity-value" class="sensitivity-value" aria-live="polite" aria-atomic="true">__MSG_options_band_default__</span>
       </div>
 
       <p class="card-meta" id="sensitivity-meta">100 / 100</p>
-      <p class="saved-toast" id="saved-toast" role="status" aria-live="polite">Saved &check;</p>
+      <p class="saved-toast" id="saved-toast" role="status" aria-live="polite">__MSG_options_saved__</p>
     </section>
 
     <section class="card" aria-labelledby="sites-label">
-      <h2 id="sites-label" class="card-title">Per-site settings</h2>
-      <p class="card-help">
-        NOAIS scans every page by default. Turn it off for sites where you don't want detection.
-      </p>
+      <h2 id="sites-label" class="card-title">__MSG_options_sites_card_title__</h2>
+      <p class="card-help">__MSG_options_sites_help__</p>
 
-      <ul class="site-list" id="site-list" role="list" aria-label="Per-site toggles"></ul>
+      <ul class="site-list" id="site-list" role="list" aria-label="__MSG_options_sites_card_title__"></ul>
 
       <div class="add-site">
-        <label for="add-site-input" class="visually-hidden">Add a custom site</label>
+        <label for="add-site-input" class="visually-hidden">__MSG_options_add_site_placeholder__</label>
         <input
           type="text"
           id="add-site-input"
-          placeholder="example.com"
+          placeholder="__MSG_options_add_site_placeholder__"
           autocomplete="off"
           spellcheck="false"
           aria-describedby="add-site-error"
         >
-        <button type="button" id="add-site-button" class="primary-button">Add</button>
+        <button type="button" id="add-site-button" class="primary-button">__MSG_options_add_site_button__</button>
         <p class="add-site-error" id="add-site-error" role="alert" aria-live="polite"></p>
       </div>
     </section>
 
+    <section class="card" id="hard-mode-card" aria-labelledby="hard-mode-label">
+      <h2 id="hard-mode-label" class="card-title">__MSG_options_hard_mode_card_title__</h2>
+      <p class="card-help">__MSG_options_hard_mode_help__</p>
+
+      <ul class="site-list" id="hard-mode-list" role="list" aria-label="__MSG_options_hard_mode_card_title__"></ul>
+    </section>
+
     <footer>
-      <p class="version">NOAIS v0.4.0</p>
-      <p class="footer-link"><a href="#" id="close-link">Close this tab</a></p>
+      <p class="version">NOAIS v1.1.0</p>
+      <p class="footer-link"><a href="#" id="close-link">__MSG_options_close_link__</a></p>
     </footer>
   </main>
+  <script src="../core/storage-keys.js"></script>
+  <script src="../core/sync-helper.js"></script>
   <script src="../core/settings.js"></script>
   <script src="options.js"></script>
 </body>

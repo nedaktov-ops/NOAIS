@@ -151,6 +151,54 @@
     "message": "Settings will not sync across devices (sync unavailable).",
     "description": "Banner shown when chrome.storage.sync is unavailable."
   },
+  "options_band_off": {
+    "message": "Off",
+    "description": "Label shown next to the sensitivity slider when sensitivity is 0-9 (v1.1)."
+  },
+  "options_band_lenient": {
+    "message": "Lenient",
+    "description": "Label shown next to the sensitivity slider when sensitivity is 10-49 (v1.1)."
+  },
+  "options_band_default": {
+    "message": "Default",
+    "description": "Label shown next to the sensitivity slider when sensitivity is 50-89 (v1.1)."
+  },
+  "options_band_strict": {
+    "message": "Strict",
+    "description": "Label shown next to the sensitivity slider when sensitivity is 90-100 (v1.1)."
+  },
+  "options_badge_curated": {
+    "message": "Curated",
+    "description": "Badge on a site-list row for one of the 7 curated platforms (v1.1)."
+  },
+  "options_badge_custom": {
+    "message": "Custom",
+    "description": "Badge on a site-list row for a user-added custom site (v1.1)."
+  },
+  "options_hard_mode_card_title": {
+    "message": "Hard-mode sites",
+    "description": "Title of the hard-mode sites card on the options page (v1.1)."
+  },
+  "options_hard_mode_help": {
+    "message": "On these sites, NOAIS dims and blurs suspected AI content instead of just adding a badge. Use the Settings page on a per-site basis to add or remove entries.",
+    "description": "Helper text under the hard-mode card title."
+  },
+  "options_hard_mode_empty": {
+    "message": "No hard-mode sites yet. Add one from the settings card above by checking 'Hard mode' for the site.",
+    "description": "Empty-state message shown when the hard-mode list is empty (v1.1)."
+  },
+  "options_hard_mode_remove": {
+    "message": "Remove",
+    "description": "Label of the per-site hard-mode Remove button (v1.1)."
+  },
+  "options_saved": {
+    "message": "Saved ✓",
+    "description": "Toast shown when a setting has been persisted (v1.1)."
+  },
+  "options_close_link": {
+    "message": "Close this tab",
+    "description": "Footer link that closes the options tab (v1.1)."
+  },
   "welcome_title": {
     "message": "Welcome to NOAIS",
     "description": "Heading at the top of the welcome page (v1.1)."
