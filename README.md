@@ -1,5 +1,10 @@
 # NOAIS
 
+[![CI](https://github.com/nedaktov-ops/NOAIS/actions/workflows/ci.yml/badge.svg)](https://github.com/nedaktov-ops/NOAIS/actions/workflows/ci.yml)
+![Tests](https://img.shields.io/badge/tests-199%2F199-brightgreen)
+![License](https://img.shields.io/badge/license-Apache--2.0-blue)
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+
 **NOAIS** stands for **N**o **A**rtificial **I**ntelligence **S**lop.
 
 A free, open-source browser extension that helps you detect, mask, and disable AI-generated content on the web — YouTube, Facebook, Instagram, TikTok, and everywhere else.
@@ -17,7 +22,7 @@ The web is filling up with low-quality, auto-generated "slop" — text, images, 
 
 ## Features (current)
 
-- **v0.7.0** (current): **Instagram + TikTok adapters** — Instagram matches `instagram.com / m.instagram.com / www / *.subdomains`; targets `<article>` and extracts first `[dir="auto"]` ≥ 30 chars. TikTok matches `tiktok.com / m.tiktok.com / www / *.subdomains`; targets `[data-e2e="comment-item"]` and extracts `[data-e2e="comment-text"]` with a fallback to first `<p>`/`<span>` ≥ 30 chars (resilient to future TikTok DOM changes). Both reuse v0.5's `shortTextMode` thresholds, are idempotent, and add no new heuristics. **199/199 green** (168 Node + 31 headless; 22 new unit tests + 9 new end-to-end assertions). This release was built with **two parallel subagents** (one per adapter) and an integration step.
+- **v0.7.0**: **Instagram + TikTok adapters** — Instagram matches `instagram.com / m.instagram.com / www / *.subdomains`; targets `<article>` and extracts first `[dir="auto"]` ≥ 30 chars. TikTok matches `tiktok.com / m.tiktok.com / www / *.subdomains`; targets `[data-e2e="comment-item"]` and extracts `[data-e2e="comment-text"]` with a fallback to first `<p>`/`<span>` ≥ 30 chars (resilient to future TikTok DOM changes). Both reuse v0.5's `shortTextMode` thresholds, are idempotent, and add no new heuristics. **199/199 green** (168 Node + 31 headless; 22 new unit tests + 9 new end-to-end assertions). This release was built with **two parallel subagents** (one per adapter) and an integration step.
 - **v0.6.0**: **Facebook adapter** — matches `facebook.com / m.facebook.com / fb.com / fb.me`; targets `[role="article"]` and extracts the first long-enough `[dir="auto"]` child (≥30 chars). Idempotent decorate (each article scored once) + MutationObserver. Reuses v0.5's `shortTextMode` thresholds. **166/166 green** (144 Node + 22 headless, including 11 unit tests + 3 end-to-end assertions on the Facebook fixture).
 - **v0.5.0**: **YouTube adapter** — detects `ytd-comment-renderer` elements and decorates them with a small NOAIS badge (NOAIS 54, etc.) and a colour-coded severity outline. Soft mode (default) = badge only. Hard mode = dim + blur. **MutationObserver** for infinite scroll. New `shortTextMode` for the heuristics engine handles 5+ word texts. 132 Node + 19 headless tests = **151 / 151 green**.
 - v0.4.0: **Options page** with global sensitivity slider (0–100), per-site curated list (YouTube, Facebook, Instagram, TikTok, Twitter/X, Reddit, LinkedIn), add-custom-site, live `chrome.storage.onChanged` sync. Content script respects per-site overrides and short-circuits to "Off" for disabled sites. Stable extension ID `jbllajhognjaknnofagmmladkdicojgg` for unpacked development.
@@ -31,7 +36,7 @@ The web is filling up with low-quality, auto-generated "slop" — text, images, 
 - v0.6: Facebook adapter (posts, comments)
 - v0.7: Instagram + TikTok adapters
 - v0.8: Optional tiny ONNX model (< 5 MB) for improved accuracy
-- v0.9: Vitest + CI on GitHub Actions
+- v0.9: **GitHub Actions CI** (Vitest skipped — see CHANGELOG for rationale; hand-rolled `tests/run.js` is dep-free and adequate)
 - v0.10: Documentation site (VitePress)
 - v1.0: First public release (GitHub Releases + Firefox AMO)
 
