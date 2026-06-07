@@ -64,7 +64,10 @@
     match: match,
     findElements: findElements,
     extractText: extractText,
-    decorate: decorate
+    decorate: decorate,
+    // v0.5: YouTube comments are short. Tell content.js to use heuristics
+    // in shortTextMode (5-word min, TTR + entropy only).
+    shortTextMode: true
   };
 
   if (typeof module !== 'undefined' && module.exports) {

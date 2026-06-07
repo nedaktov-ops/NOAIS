@@ -105,50 +105,87 @@
 
   /**
    * Analyse a body of text and return a 0-100 AI-likely score plus the raw
-   * metric values. Returns score=0 for text shorter than 50 words.
+   * metric values. Returns score=0 for text shorter than 50 words by default;
+   * with `shortTextMode: true`, accepts as few as 5 words and uses only
+   * TTR + entropy (burstiness and hapax are unreliable on very short text).
    *
    * Options (optional, all keys optional):
-   *   sensitivity - integer 0-100, default 100. The raw score is multiplied
-   *                 by (sensitivity / 100) and clamped to [0, 100] before
-   *                 rounding. 0 forces the score to 0; 200 caps at 100.
+   *   sensitivity     - integer 0-100, default 100. The raw score is multiplied
+   *                     by (sensitivity / 100) and clamped to [0, 100] before
+   *                     rounding. 0 forces the score to 0; 1000 caps at 100.
+   *   shortTextMode   - boolean, default false. Lowers the minimum word count
+   *                     to 5 and uses only TTR + entropy. Useful for comment
+   *                     threads and other short texts.
    *
    * @param {string} text
-   * @param {{sensitivity?:number}} [options]
+   * @param {{sensitivity?:number, shortTextMode?:boolean}} [options]
    * @returns {{score:number, wordCount:number, breakdown:object}}
    */
   function analyzeText(text, options) {
     const words = tokenize(text);
     const wordCount = words.length;
+    const shortMode = !!(options && options.shortTextMode === true);
+    const minWords = shortMode ? 5 : 50;
 
-    if (wordCount < 50) {
+    if (wordCount < minWords) {
       return {
         score: 0,
         wordCount,
-        breakdown: { reason: 'Text too short for analysis (< 50 words).' },
+        breakdown: {
+          reason: 'Text too short for analysis (< ' + minWords + ' words).',
+        },
       };
     }
 
-    const b = burstiness(text);
+    // Compute the metrics.
     const ttr = typeTokenRatio(words);
     const entropy = shannonEntropy(words);
-    const hapax = hapaxRatio(words);
 
-    // Normalise each metric to a 0-1 "AI-likely" sub-score.
-    // Lower raw value = more AI-like. We map the "human range" to 0 and the
-    // "AI range" to 1, clamped.
-    const bScore = clamp((0.8 - b) / 0.5, 0, 1);   // human ~0.8, AI ~0.3
-    const tScore = clamp((0.6 - ttr) / 0.3, 0, 1);  // human ~0.6, AI ~0.3
-    const eScore = clamp((10 - entropy) / 3, 0, 1); // human ~10, AI ~7
-    const hScore = clamp((0.7 - hapax) / 0.4, 0, 1); // human ~0.7, AI ~0.3
-
-    // Weighted average.
-    const score01 = bScore * 0.3 + tScore * 0.25 + eScore * 0.25 + hScore * 0.2;
-
-    // Apply sensitivity multiplier. Default 100 = no change. 0 -> score=0.
+    // Sensitivity multiplier. Default 100 = no change. 0 -> score=0.
     const sensitivity = (options && typeof options.sensitivity === 'number')
       ? options.sensitivity
       : 100;
     const multiplier = clamp(sensitivity, 0, 1000) / 100;
+
+    let bScore, hScore;
+    if (shortMode) {
+      // Short-text mode: only TTR + entropy. Weights renormalised to 1.0.
+      // Burstiness and hapax are unreliable on <100 words.
+      //
+      // Short-text thresholds (different from long-text):
+      //   TTR:     human ~0.90, AI ~0.70. (long-text: human 0.6, AI 0.3)
+      //   Entropy: human ~6.0,  AI ~4.5.  (long-text: human 10,  AI 7)
+      const tScore = clamp((0.90 - ttr) / 0.20, 0, 1);
+      const eScore = clamp((6.0 - entropy) / 1.5, 0, 1);
+      const score01 = tScore * 0.5 + eScore * 0.5;
+      const final01 = clamp(score01 * multiplier, 0, 1);
+      const score = Math.round(final01 * 100);
+      return {
+        score,
+        wordCount,
+        breakdown: {
+          typeTokenRatio: Number(ttr.toFixed(3)),
+          entropy: Number(entropy.toFixed(2)),
+          subScores: {
+            typeTokenRatio: Number(tScore.toFixed(3)),
+            entropy: Number(eScore.toFixed(3)),
+          },
+          sensitivity: Number(sensitivity),
+          shortTextMode: true,
+        },
+      };
+    }
+
+    // Long-text mode (default): all four metrics.
+    const b = burstiness(text);
+    const hapax = hapaxRatio(words);
+    bScore = clamp((0.8 - b) / 0.5, 0, 1);       // human ~0.8, AI ~0.3
+    const tScore = clamp((0.6 - ttr) / 0.3, 0, 1);  // human ~0.6, AI ~0.3
+    const eScore = clamp((10 - entropy) / 3, 0, 1); // human ~10, AI ~7
+    hScore = clamp((0.7 - hapax) / 0.4, 0, 1);   // human ~0.7, AI ~0.3
+
+    // Weighted average.
+    const score01 = bScore * 0.3 + tScore * 0.25 + eScore * 0.25 + hScore * 0.2;
     const final01 = clamp(score01 * multiplier, 0, 1);
     const score = Math.round(final01 * 100);
 

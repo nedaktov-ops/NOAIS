@@ -105,4 +105,42 @@ tests.push({
   },
 });
 
+tests.push({
+  name: 'content.js: dispatches to adapters via pickAdapter()',
+  fn: () => {
+    assert.match(CONTENT, /function pickAdapter/);
+    assert.match(CONTENT, /NOAIS_YOUTUBE_ADAPTER/);
+  },
+});
+
+tests.push({
+  name: 'content.js: passes shortTextMode to heuristics when adapter requests it',
+  fn: () => {
+    assert.match(CONTENT, /shortTextMode/);
+  },
+});
+
+tests.push({
+  name: 'content.js: sets up MutationObserver for adapter scan',
+  fn: () => {
+    assert.match(CONTENT, /MutationObserver/);
+    assert.match(CONTENT, /scheduleScan/);
+  },
+});
+
+tests.push({
+  name: 'content.js: applies hard-mode CSS class when noais_hard_mode_sites[host] is true',
+  fn: () => {
+    assert.match(CONTENT, /noais-hard/);
+    assert.match(CONTENT, /noais_hard_mode_sites/);
+  },
+});
+
+tests.push({
+  name: 'content.js: v0.5.0 banner in load log',
+  fn: () => {
+    assert.match(CONTENT, /v0\.5\.0/);
+  },
+});
+
 module.exports = tests;
