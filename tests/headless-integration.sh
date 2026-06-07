@@ -1,25 +1,27 @@
 #!/usr/bin/env bash
-# NOAIS headless integration test for v0.5
+# NOAIS headless integration test for v0.6
 # Loads the extension in Chromium and asserts:
 #   - Content script runs on AI + human + YouTube fixtures
 #   - Extension ID is stable (key field honored)
-#   - v0.5 adapter scans YouTube comments and applies badges
+#   - v0.5 + v0.6 adapters scans YouTube comments and applies badges
 
 EXT="$(cd "$(dirname "$0")/.." && pwd)/extension"
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 TMPDIR1="$(mktemp -d)"
 TMPDIR2="$(mktemp -d)"
 TMPDIR3="$(mktemp -d)"
+TMPDIR4="$(mktemp -d)"
 STDOUT_LOG="$(mktemp)"
 STDERR_LOG1="$(mktemp)"
 STDERR_LOG2="$(mktemp)"
 STDERR_LOG3="$(mktemp)"
+STDERR_LOG4="$(mktemp)"
 PASS=0
 FAIL=0
 
 cleanup() {
-  rm -rf "$TMPDIR1" "$TMPDIR2" "$TMPDIR3" "$STDOUT_LOG" \
-         "$STDERR_LOG1" "$STDERR_LOG2" "$STDERR_LOG3"
+  rm -rf "$TMPDIR1" "$TMPDIR2" "$TMPDIR3" "$TMPDIR4" "$STDOUT_LOG" \
+         "$STDERR_LOG1" "$STDERR_LOG2" "$STDERR_LOG3" "$STDERR_LOG4"
 }
 trap cleanup EXIT
 
@@ -70,7 +72,7 @@ extract_id() {
 }
 
 echo ""
-echo "=== Headless integration test (v0.5) ==="
+echo "=== Headless integration test (v0.6) ==="
 echo "    Extension: $EXT"
 
 # --- Run 1: capture the ID and content-script log ---
@@ -80,8 +82,8 @@ run_chromium "$TMPDIR1" "$STDERR_LOG1" "file://$REPO/tests/fixtures/test-ai.html
 ID1=$(extract_id "$STDERR_LOG1")
 echo "  ID: $ID1"
 
-assert_log_contains '\[NOAIS content\] v0\.5\.0 loaded' "$STDERR_LOG1" \
-  "v0.5 content script loaded"
+assert_log_contains '\[NOAIS content\] v0\.6\.0 loaded' "$STDERR_LOG1" \
+  "v0.6 content script loaded"
 assert_log_contains 'sensitivity: 100' "$STDERR_LOG1" \
   "default sensitivity is 100"
 assert_log_contains 'score=[0-9]+/100' "$STDERR_LOG1" \
@@ -115,8 +117,8 @@ else
 fi
 
 # --- Run 2: verify v0.3 functionality still works on human text ---
-assert_log_contains '\[NOAIS content\] v0\.5\.0 loaded' "$STDERR_LOG2" \
-  "v0.5 content script loaded on human page"
+assert_log_contains '\[NOAIS content\] v0\.6\.0 loaded' "$STDERR_LOG2" \
+  "v0.6 content script loaded on human page"
 assert_log_contains 'sensitivity: 100' "$STDERR_LOG2" \
   "sensitivity reported on human page"
 # Human text: score should be < 30 (zero/green severity)
@@ -132,8 +134,8 @@ echo ""
 echo "--- Run 3 (YouTube adapter on fixture) ---"
 run_chromium "$TMPDIR3" "$STDERR_LOG3" "file://$REPO/tests/fixtures/test-youtube.html"
 echo ""
-assert_log_contains '\[NOAIS content\] v0\.5\.0 loaded' "$STDERR_LOG3" \
-  "v0.5 content script loaded on YouTube fixture"
+assert_log_contains '\[NOAIS content\] v0\.6\.0 loaded' "$STDERR_LOG3" \
+  "v0.6 content script loaded on YouTube fixture"
 assert_log_contains 'adapter "youtube" initial scan' "$STDERR_LOG3" \
   "YouTube adapter ran an initial scan"
 # Count the noais badges in the dumped DOM (one per scored comment)
@@ -163,13 +165,33 @@ fi
 # (We can't easily assert this from the DOM alone without per-element
 #  inspection, so we skip the strict version here.)
 
-# --- Manifest sanity ---
+# --- Run 4: Facebook adapter end-to-end ---
 echo ""
-echo "--- Manifest sanity ---"
-jq empty "$EXT/manifest.json" && ok "manifest.json is valid JSON" || ko "manifest.json" "jq empty failed"
+echo "--- Run 4 (Facebook adapter on fixture) ---"
+run_chromium "$TMPDIR4" "$STDERR_LOG4" "file://$REPO/tests/fixtures/test-facebook.html"
+assert_log_contains '\[NOAIS content\] v0\.6\.0 loaded' "$STDERR_LOG4" \
+  "v0.6 content script loaded on Facebook fixture"
+assert_log_contains 'adapter "facebook" initial scan' "$STDERR_LOG4" \
+  "Facebook adapter ran an initial scan"
+# The fixture has 4 + 1 (injected) = 5 articles; the first one ("First post!")
+# is too short and gets skipped. So we expect at least 3 FB articles to be
+# decorated with NOAIS badges.
+FB_BADGE_COUNT=$(grep -oE 'noais-badge ' "$STDOUT_LOG" | wc -l)
+if [ "$FB_BADGE_COUNT" -ge 3 ]; then
+  ok "at least 3 NOAIS badges appear on Facebook articles ($FB_BADGE_COUNT found)"
+else
+  ko "FB badge count" "expected >= 3, got $FB_BADGE_COUNT"
+fi
+if grep -qE 'noais-score-(low|high)' "$STDOUT_LOG"; then
+  ok "non-zero severity class on at least one Facebook article"
+else
+  ko "FB severity class" "no low/high severity element found in DOM"
+fi
+
+# --- Manifest sanity ---
 VER=$(jq -r '.version' "$EXT/manifest.json")
-[ "$VER" = "0.5.0" ] && ok "manifest version is 0.5.0" || ko "version" "expected 0.5.0, got $VER"
-# v0.5: manifest must include adapters in content_scripts
+[ "$VER" = "0.6.0" ] && ok "manifest version is 0.6.0" || ko "version" "expected 0.6.0, got $VER"
+# v0.5+v0.6: manifest must include adapters in content_scripts
 if jq -e '.content_scripts[0].css | index("styles/adapters.css")' "$EXT/manifest.json" >/dev/null; then
   ok "manifest content_scripts.css includes styles/adapters.css"
 else
@@ -189,6 +211,9 @@ if [ $FAIL -gt 0 ]; then
   echo ""
   echo "  Run 3 stderr (last 20 lines):"
   tail -20 "$STDERR_LOG3" | sed 's/^/    /'
+  echo ""
+  echo "  Run 4 stderr (last 20 lines):"
+  tail -20 "$STDERR_LOG4" | sed 's/^/    /'
   exit 1
 fi
 exit 0

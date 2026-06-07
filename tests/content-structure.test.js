@@ -137,9 +137,9 @@ tests.push({
 });
 
 tests.push({
-  name: 'content.js: v0.5.0 banner in load log',
+  name: 'content.js: v0.6.0 banner in load log',
   fn: () => {
-    assert.match(CONTENT, /v0\.5\.0/);
+    assert.match(CONTENT, /v0\.6\.0/);
   },
 });
 
