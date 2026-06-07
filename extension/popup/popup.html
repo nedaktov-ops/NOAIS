@@ -27,6 +27,12 @@
       <p class="scan-count" id="scan-count" aria-live="polite" aria-atomic="true">…</p>
     </section>
 
+    <section class="site-section" aria-labelledby="site-label">
+      <p class="section-label" id="site-label">On this site</p>
+      <p class="site-status" id="site-status" aria-live="polite" aria-atomic="true">…</p>
+      <p class="site-hostname" id="site-hostname"></p>
+    </section>
+
     <section class="toggle-section" aria-labelledby="toggle-label">
       <label class="switch" for="toggle">
         <input type="checkbox" id="toggle" aria-labelledby="toggle-label">
@@ -36,9 +42,10 @@
     </section>
 
     <footer>
-      <p class="version">v0.3.0</p>
+      <p class="version">v0.4.0 · <a href="#" id="open-settings" class="footer-link">Open Settings</a></p>
     </footer>
   </main>
+  <script src="../core/settings.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>
