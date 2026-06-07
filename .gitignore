@@ -50,3 +50,7 @@ temp/
 
 # Local backups (kept outside repo, but just in case)
 backups/
+
+# Git worktree isolation (per using-git-worktrees skill)
+.worktrees/
+worktrees/
