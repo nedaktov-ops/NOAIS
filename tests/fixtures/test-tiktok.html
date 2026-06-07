@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en" data-noais-test-host="tiktok.com">
+<head>
+  <meta charset="utf-8">
+  <title>TikTok fixture — NOAIS v0.7</title>
+  <!-- Mimics a TikTok video page with [data-e2e="comment-item"] elements.
+       TikTok's web UI exposes stable test hooks; the body lives in
+       [data-e2e="comment-text"]. We also include one fallback case
+       (no data-e2e on the body) to exercise the <p>/<span> fallback. -->
+  <style>
+    body { font-family: Helvetica, Arial, sans-serif; max-width: 700px; margin: 24px auto; padding: 0 16px; }
+    [data-e2e="comment-item"] { display: block; border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin: 12px 0; background: #fff; }
+    h2 { font-size: 1.2em; }
+  </style>
+</head>
+<body>
+  <h2>NOAIS v0.7 fixture: TikTok comment thread</h2>
+  <p>This page mimics the TikTok comment DOM. NOAIS will scan each
+     <code>[data-e2e="comment-item"]</code> and append a badge.</p>
+
+  <div data-e2e="comment-item">
+    <p data-e2e="comment-text">lol</p>
+  </div>
+
+  <div data-e2e="comment-item">
+    <p data-e2e="comment-text">fire</p>
+  </div>
+
+  <div data-e2e="comment-item">
+    <p data-e2e="comment-text">This app is so cool, the algorithm is on point</p>
+  </div>
+
+  <div data-e2e="comment-item">
+    <p data-e2e="comment-text">It is important to note that TikTok has fundamentally transformed the way in which users interact with short-form video content, providing an unprecedented level of algorithmic personalization that has redefined the modern media landscape</p>
+  </div>
+
+  <div data-e2e="comment-item">
+    <p>This is a fallback test paragraph that is long enough to qualify for the thirty character minimum</p>
+  </div>
+
+  <script>
+    // Simulate infinite scroll: inject one more comment after 100ms.
+    // The MutationObserver in content.js should pick this up.
+    setTimeout(() => {
+      const item = document.createElement('div');
+      item.setAttribute('data-e2e', 'comment-item');
+
+      const body = document.createElement('p');
+      body.setAttribute('data-e2e', 'comment-text');
+      body.textContent = 'Just got the new phone and the camera is insane';
+
+      item.appendChild(body);
+      document.body.appendChild(item);
+    }, 100);
+  </script>
+</body>
+</html>
