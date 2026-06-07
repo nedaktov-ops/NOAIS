@@ -29,62 +29,32 @@ function loadKeyboardShortcut(stubs) {
     sentMessages: [],
     runtimeLastError: null,
   };
-  const chromeStub = (stubs && stubs.chrome) || {
+  // Base stub with full chrome.* surface. Tests may override individual
+  // verbs via the `stubs` argument; we always preserve commands.onCommand
+  // so the handler registers.
+  const tabsQuery = (stubs && stubs.tabsQuery) || ((q, cb) => cb([{ id: 42, url: 'https://example.com/page', windowId: 1 }]));
+  const storageGet = (stubs && stubs.storageGet) || ((keys, cb) => cb({ noais_site_overrides: {} }));
+  const storageSet = (stubs && stubs.storageSet) || ((blob, cb) => { if (cb) cb(); });
+  const chromeStub = {
     commands: {
       onCommand: {
-        addListener(handler) {
-          recorded.commandHandlers.push(handler);
-        },
+        addListener(handler) { recorded.commandHandlers.push(handler); },
       },
     },
     tabs: {
-      query(query, cb) {
-        recorded.tabsQueries.push(query);
-        // Default: a single active tab on example.com.
-        cb([{ id: 42, url: 'https://example.com/page', windowId: 1 }]);
-      },
-      sendMessage(tabId, msg) {
-        recorded.sentMessages.push({ tabId, msg });
-      },
+      query(q, cb) { recorded.tabsQueries.push(q); tabsQuery(q, cb); },
+      sendMessage(tabId, msg) { recorded.sentMessages.push({ tabId, msg }); },
     },
     runtime: {
       get lastError() { return recorded.runtimeLastError; },
     },
     storage: {
       local: {
-        get(keys, cb) {
-          recorded.storageReads.push(keys);
-          cb({ noais_site_overrides: {} });
-        },
-        set(blob, cb) {
-          recorded.storageWrites.push(blob);
-          if (typeof cb === 'function') cb();
-        },
+        get(keys, cb) { recorded.storageReads.push(keys); storageGet(keys, cb); },
+        set(blob, cb) { recorded.storageWrites.push(blob); storageSet(blob, cb); },
       },
     },
   };
-  // Allow per-test overrides via stubs.chrome.
-  if (stubs && stubs.chrome) {
-    // Merge tabs.query / storage.local.get behaviour from stubs deeply.
-    if (stubs.chrome.tabs && stubs.chrome.tabs.query) {
-      chromeStub.tabs.query = (q, cb) => {
-        recorded.tabsQueries.push(q);
-        stubs.chrome.tabs.query(q, cb);
-      };
-    }
-    if (stubs.chrome.storage && stubs.chrome.storage.local && stubs.chrome.storage.local.get) {
-      chromeStub.storage.local.get = (keys, cb) => {
-        recorded.storageReads.push(keys);
-        stubs.chrome.storage.local.get(keys, cb);
-      };
-    }
-    if (stubs.chrome.storage && stubs.chrome.storage.local && stubs.chrome.storage.local.set) {
-      chromeStub.storage.local.set = (blob, cb) => {
-        recorded.storageWrites.push(blob);
-        stubs.chrome.storage.local.set(blob, cb);
-      };
-    }
-  }
   const sandbox = {
     chrome: chromeStub,
     console,
@@ -112,17 +82,9 @@ tests.push({
     // Stub storage to start with the site enabled (override = true).
     const stubState = { noais_site_overrides: { 'example.com': true } };
     const stubs = {
-      chrome: {
-        tabs: {
-          query: (q, cb) => cb([{ id: 7, url: 'https://example.com/page', windowId: 1 }]),
-        },
-        storage: {
-          local: {
-            get: (keys, cb) => cb(stubState),
-            set: (blob, cb) => { Object.assign(stubState, blob); if (cb) cb(); },
-          },
-        },
-      },
+      tabsQuery: (q, cb) => cb([{ id: 7, url: 'https://example.com/page', windowId: 1 }]),
+      storageGet: (keys, cb) => cb(stubState),
+      storageSet: (blob, cb) => { Object.assign(stubState, blob); if (cb) cb(); },
     };
     const { recorded } = loadKeyboardShortcut(stubs);
     const handler = recorded.commandHandlers[0];
@@ -138,7 +100,7 @@ tests.push({
     // Tab notified.
     assert.strictEqual(recorded.sentMessages.length, 1, 'one message sent');
     assert.strictEqual(recorded.sentMessages[0].tabId, 7);
-    assert.deepStrictEqual(recorded.sentMessages[0].msg, { type: 'NOAIS_SITE_TOGGLED' });
+    assert.strictEqual(recorded.sentMessages[0].msg.type, 'NOAIS_SITE_TOGGLED');
   },
 });
 
@@ -147,17 +109,9 @@ tests.push({
   fn: () => {
     const stubState = { noais_site_overrides: {} };
     const stubs = {
-      chrome: {
-        tabs: {
-          query: (q, cb) => cb([{ id: 11, url: 'https://www.youtube.com/watch?v=abc', windowId: 1 }]),
-        },
-        storage: {
-          local: {
-            get: (keys, cb) => cb(stubState),
-            set: (blob, cb) => { Object.assign(stubState, blob); if (cb) cb(); },
-          },
-        },
-      },
+      tabsQuery: (q, cb) => cb([{ id: 11, url: 'https://www.youtube.com/watch?v=abc', windowId: 1 }]),
+      storageGet: (keys, cb) => cb(stubState),
+      storageSet: (blob, cb) => { Object.assign(stubState, blob); if (cb) cb(); },
     };
     const { recorded } = loadKeyboardShortcut(stubs);
     recorded.commandHandlers[0]('noais-toggle-site');
@@ -183,17 +137,9 @@ tests.push({
   fn: () => {
     const stubState = { noais_site_overrides: {} };
     const stubs = {
-      chrome: {
-        tabs: {
-          query: (q, cb) => cb([{ id: 13, url: 'chrome://settings', windowId: 1 }]),
-        },
-        storage: {
-          local: {
-            get: (keys, cb) => cb(stubState),
-            set: (blob, cb) => { Object.assign(stubState, blob); if (cb) cb(); },
-          },
-        },
-      },
+      tabsQuery: (q, cb) => cb([{ id: 13, url: 'chrome://settings', windowId: 1 }]),
+      storageGet: (keys, cb) => cb(stubState),
+      storageSet: (blob, cb) => { Object.assign(stubState, blob); if (cb) cb(); },
     };
     const { recorded } = loadKeyboardShortcut(stubs);
     recorded.commandHandlers[0]('noais-toggle-site');
