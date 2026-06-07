@@ -5,6 +5,40 @@ All notable changes to NOAIS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2026-06-07
+
+### Added
+- **GitHub Actions CI** (`.github/workflows/ci.yml`).
+  - Triggers on `push` to `main`, `pull_request` to `main`, and `workflow_dispatch`.
+  - One job (`test`) on `ubuntu-latest`. Installs Chromium + `jq`, sets up Node 18, runs `make test-all`.
+  - On failure, uploads test logs as a downloadable artifact (7-day retention).
+  - **199/199 green on a fresh runner** (~45–60 s wall-clock).
+- **CI badge** at the top of the README. Tests / License / Version badges too.
+- `docs/superpowers/specs/2026-06-07-v0.9-ci-design.md` — design rationale, including the Vitest decision (§6 of the spec).
+
+### Changed
+- `manifest.json` bumped to `0.9.0`.
+- `extension/content/content.js` v0.9.0 (load-log banner).
+- README: CI badge, roadmap line updated to clarify the Vitest-skip decision.
+- All static tests (`manifest.test.js`, `content-structure.test.js`, `adapter-structure.test.js`,
+  `headless-integration.sh`) bumped from `0.7.0` to `0.9.0`.
+
+### Decision: Vitest skipped (with rationale)
+
+The README roadmap called for "Vitest + CI" in v0.9. **Vitest is intentionally not added** because:
+
+1. The hand-rolled `tests/run.js` runner is dependency-free, runs on any Node 14+, and supports everything we use (`assert.strictEqual`, async, sub-suites, per-file PASS/FAIL).
+2. Vitest would add ~50 MB of `node_modules` and a new supply-chain surface (security concern for a privacy-sensitive extension) for zero functional gain.
+3. CI runs in ~30 s end-to-end with the hand-rolled runner; Vitest's startup alone is ~5 s.
+4. Migration is mechanical if ever reversed: rewrite assertions from `assert.strictEqual` to `expect(...).toBe(...)` and drop in a Vitest config. Estimated effort: half a day.
+
+If a future contributor needs Vitest-specific features (snapshot testing, watch mode, parallel worker pool), the migration path is documented in the v0.9 spec.
+
+### Test counts
+- Node: 168 (unchanged from v0.7).
+- Headless: 31 (unchanged from v0.7).
+- **Total: 199/199 green** (verified locally before push; CI will re-verify on the v0.9 commit).
+
 ## [0.7.0] - 2026-06-07
 
 ### Added
