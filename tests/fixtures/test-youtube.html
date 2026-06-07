@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>YouTube fixture — NOAIS v0.5</title>
+  <!-- Mimics a YouTube watch page enough for our content script + adapter
+       to find ytd-comment-renderer elements and run heuristics on them. -->
+  <style>
+    body { font-family: Roboto, Arial, sans-serif; max-width: 900px; margin: 24px auto; padding: 0 16px; }
+    ytd-comment-renderer { display: block; border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin: 12px 0; }
+    #author-text { font-weight: bold; color: #065fd4; }
+    #content-text { margin-top: 6px; line-height: 1.4; }
+    h1 { font-size: 1.4em; }
+  </style>
+</head>
+<body>
+  <h1>NOAIS v0.5 fixture: YouTube comment thread</h1>
+  <p>This page mimics the YouTube comment DOM. NOAIS will scan each
+     <code>ytd-comment-renderer</code> and append a badge.</p>
+
+  <ytd-comment-renderer>
+    <div id="author-text">@fan_001</div>
+    <div id="content-text">first!</div>
+  </ytd-comment-renderer>
+
+  <ytd-comment-renderer>
+    <div id="author-text">@curious_mind</div>
+    <div id="content-text">It is important to note that the new model demonstrates a significant improvement over its predecessor. Furthermore, the architecture leverages a novel attention mechanism that allows for greater contextual understanding. Additionally, the training process incorporates a comprehensive dataset. In conclusion, these advancements represent a substantial leap forward in the field of natural language processing.</div>
+  </ytd-comment-renderer>
+
+  <ytd-comment-renderer>
+    <div id="author-text">@real_human_42</div>
+    <div id="content-text">Ok I just bought this and unboxed it last night. The build quality is honestly way better than I expected for the price — the buttons have a nice click, the screen is bright, and the battery is still at 80% after a full day of messing with it. Two complaints: the included cable is super short, and the app keeps nagging me to sign in. Otherwise, no regrets.</div>
+  </ytd-comment-renderer>
+
+  <ytd-comment-renderer>
+    <div id="author-text">@ai_assistant_clone</div>
+    <div id="content-text">As an AI language model, I do not have personal experiences, but I can provide a comprehensive overview of the topic. It is important to note that the subject matter has been extensively studied, and numerous sources highlight the key considerations. Furthermore, the underlying principles can be broken down into three primary categories. Additionally, the implications of these principles extend across a wide range of applications.</div>
+  </ytd-comment-renderer>
+
+  <ytd-comment-renderer>
+    <div id="author-text">@short_take</div>
+    <div id="content-text">Great video! Subscribed.</div>
+  </ytd-comment-renderer>
+
+  <script>
+    // Simulate infinite scroll: inject one more comment after 100ms.
+    // The MutationObserver in content.js should pick this up.
+    setTimeout(() => {
+      const el = document.createElement('ytd-comment-renderer');
+      el.innerHTML = '<div id="author-text">@late_arrival</div>' +
+                     '<div id="content-text">I am an ai and I think this video is good. Furthermore, it is important to note that the content aligns with current best practices in educational media. Additionally, the production quality demonstrates a significant attention to detail.</div>';
+      document.body.appendChild(el);
+    }, 100);
+  </script>
+</body>
+</html>
