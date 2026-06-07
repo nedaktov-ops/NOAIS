@@ -46,10 +46,22 @@
   <script>
     // Simulate infinite scroll: inject one more comment after 100ms.
     // The MutationObserver in content.js should pick this up.
+    // NOTE: we use createElement + textContent (not innerHTML) to model
+    // safe DOM construction — even in test fixtures.
     setTimeout(() => {
       const el = document.createElement('ytd-comment-renderer');
-      el.innerHTML = '<div id="author-text">@late_arrival</div>' +
-                     '<div id="content-text">I am an ai and I think this video is good. Furthermore, it is important to note that the content aligns with current best practices in educational media. Additionally, the production quality demonstrates a significant attention to detail.</div>';
+      const author = document.createElement('div');
+      author.id = 'author-text';
+      author.textContent = '@late_arrival';
+      const content = document.createElement('div');
+      content.id = 'content-text';
+      content.textContent = 'I am an ai and I think this video is good. ' +
+                            'Furthermore, it is important to note that the content ' +
+                            'aligns with current best practices in educational media. ' +
+                            'Additionally, the production quality demonstrates a ' +
+                            'significant attention to detail.';
+      el.appendChild(author);
+      el.appendChild(content);
       document.body.appendChild(el);
     }, 100);
   </script>
