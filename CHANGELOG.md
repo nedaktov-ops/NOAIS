@@ -5,6 +5,35 @@ All notable changes to NOAIS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-06-07
+
+### Added
+- **Content script** (`content/content.js`) injected on all URLs at `document_idle`.
+- **AI-phrase scanner**: counts occurrences of 5 hard-coded AI-typical phrases (case-insensitive) in the page's visible text.
+- **Popup ↔ content-script messaging**: popup queries the active tab for the count via `chrome.tabs.sendMessage`.
+- **Live count display** in the popup with colour-coded severity:
+  - **0** → green ("zero")
+  - **1–2** → amber ("low")
+  - **3+** → red ("high")
+  - **Error** → grey ("N/A", "No response", etc.)
+- **Manifest v0.2.0** with `content_scripts` and `activeTab` permission.
+
+### Quality
+- All v0.1 checks still pass (manifest valid, JS syntax OK, HTML structure 8/8).
+- New checks: no duplicate keys in manifest, all three JS files validate.
+- **End-to-end automated test**: headless Chromium loaded the extension on a test page containing 6 AI phrases. The content script logged `initial count: 6` — exactly correct. The popup's query path is also covered by the message handler.
+
+### Phrases detected (v0.2)
+1. `as an ai language model`
+2. `i am an ai`
+3. `i'm an ai`
+4. `i don't have personal`
+5. `i cannot browse`
+
+### Notes
+- Detection is intentionally crude — it only catches "tells" that humans rarely produce. v0.3 will replace this with statistical heuristics (burstiness, entropy, type-token ratio) for much broader coverage.
+- The content script runs once per page load. SPA navigation re-injects automatically on full reloads; for client-side route changes the count will refresh next time the popup is opened (v0.3 will add live updates).
+
 ## [0.1.0] - 2026-06-07
 
 ### Added

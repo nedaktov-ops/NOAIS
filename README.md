@@ -17,8 +17,9 @@ The web is filling up with low-quality, auto-generated "slop" — text, images, 
 
 ## Features (current)
 
-- **v0.1.0** (current): Hello-world popup with working enable/disable toggle that persists across browser restarts. 100% on-device. Zero network calls. Dark-mode aware. Accessible (ARIA labels, keyboard focus).
-- v0.0: Project initialised.
+- **v0.2.0** (current): Scans every page for 5 hard-coded AI-typical phrases ("As an AI language model", "I am an AI", etc.) and shows a colour-coded count in the popup. Content script + message passing + live count.
+- v0.1.0: Hello-world popup with working enable/disable toggle that persists across browser restarts. 100% on-device. Zero network calls. Dark-mode aware. Accessible (ARIA labels, keyboard focus).
+- v0.0.0: Project initialised.
 
 ## Features (planned)
 
