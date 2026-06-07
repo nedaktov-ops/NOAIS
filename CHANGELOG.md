@@ -5,6 +5,49 @@ All notable changes to NOAIS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-06-07
+
+### Added
+- **Instagram adapter** (`extension/core/adapters/instagram.js`).
+  - Matches `instagram.com`, `www.instagram.com`, `m.instagram.com`, and any `*.instagram.com` subdomain.
+  - Targets `<article>` and extracts the first long-enough `[dir="auto"]` descendant (≥30 chars).
+  - `shortTextMode: true` (re-uses v0.5's 5-word minimum + TTR + entropy thresholds).
+  - Idempotent — each article is decorated at most once via `dataset.noaisScored`.
+- **TikTok adapter** (`extension/core/adapters/tiktok.js`).
+  - Matches `tiktok.com`, `www.tiktok.com`, `m.tiktok.com`, and any `*.tiktok.com` subdomain.
+  - Targets `[data-e2e="comment-item"]` and extracts `[data-e2e="comment-text"]` (TikTok's stable
+    internal-testing hooks). Falls back to first `<p>`/`<span>` ≥ 30 chars if those hooks ever
+    disappear in a future TikTok redesign.
+  - `shortTextMode: true`, idempotent decorate, same severity badges as YouTube + Facebook.
+- `tests/fixtures/test-instagram.html` — 4 articles + 1 injected 100 ms after load.
+- `tests/fixtures/test-tiktok.html` — 5 comments (one exercises the fallback path) + 1 injected.
+
+### Changed
+- `manifest.json` bumped to `0.7.0`. `content_scripts.js` now loads
+  `core/adapters/instagram.js` and `core/adapters/tiktok.js` after Facebook and before `content/content.js`.
+- `extension/content/content.js` (`v0.7.0`):
+  - `pickAdapter()` now also recognises `window.NOAIS_INSTAGRAM_ADAPTER` and `window.NOAIS_TIKTOK_ADAPTER`.
+  - Load-log banner updated to `v0.7.0`.
+- Existing tests (`manifest.test.js`, `content-structure.test.js`, `adapter-structure.test.js`)
+  bumped from `0.6.0` to `0.7.0`; `adapter-structure.test.js` adds wiring assertions for the new
+  Instagram + TikTok files.
+- `tests/headless-integration.sh` adds **Run 5** (Instagram fixture) and **Run 6** (TikTok fixture)
+  — 9 new assertions in total (banner + adapter scan + ≥3 badges + non-zero severity class for
+  each), plus an explicit `content_scripts.js` cross-check.
+
+### Test counts
+- Node: 168 (was 144) — added 22 unit tests (11 Instagram + 11 TikTok) + 2 adapter-structure
+  assertions.
+- Headless: 31 (was 22) — added 9 end-to-end assertions (5 Instagram + 5 TikTok − 1 version
+  overlap).
+- **Total: 199/199 green.**
+
+### Process note
+This release was shipped via **two parallel subagents** (one per adapter) + an integrator
+session that merged both feature branches and added the manifest / content.js / headless
+glue. Both subagents produced `155 / 155` green independently; the integration step added
+the remaining 13 unit + 9 headless assertions.
+
 ## [0.6.0] - 2026-06-07
 
 ### Added
