@@ -132,4 +132,14 @@ tests.push({
   }
 });
 
+tests.push({
+  name: 'adapter-structure: base.js createBadge sets data-noais-breakdown (v1.1)',
+  fn: () => {
+    // The v1.1 createBadge accepts an optional 4th arg `breakdown` and
+    // serialises it as the data-noais-breakdown attribute so the badge
+    // tooltip can render the metrics.
+    assert.match(ADAPTER_BASE, /data-noais-breakdown|noaisBreakdown/);
+  }
+});
+
 module.exports = tests;

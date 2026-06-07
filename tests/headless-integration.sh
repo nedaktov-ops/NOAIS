@@ -13,6 +13,8 @@ TMPDIR3="$(mktemp -d)"
 TMPDIR4="$(mktemp -d)"
 TMPDIR5="$(mktemp -d)"
 TMPDIR6="$(mktemp -d)"
+TMPDIR7="$(mktemp -d)"
+TMPDIR8="$(mktemp -d)"
 STDOUT_LOG="$(mktemp)"
 STDERR_LOG1="$(mktemp)"
 STDERR_LOG2="$(mktemp)"
@@ -20,12 +22,16 @@ STDERR_LOG3="$(mktemp)"
 STDERR_LOG4="$(mktemp)"
 STDERR_LOG5="$(mktemp)"
 STDERR_LOG6="$(mktemp)"
+STDERR_LOG7="$(mktemp)"
+STDERR_LOG8="$(mktemp)"
 PASS=0
 FAIL=0
 
 cleanup() {
-  rm -rf "$TMPDIR1" "$TMPDIR2" "$TMPDIR3" "$TMPDIR4" "$TMPDIR5" "$TMPDIR6" "$STDOUT_LOG" \
-         "$STDERR_LOG1" "$STDERR_LOG2" "$STDERR_LOG3" "$STDERR_LOG4" "$STDERR_LOG5" "$STDERR_LOG6"
+  rm -rf "$TMPDIR1" "$TMPDIR2" "$TMPDIR3" "$TMPDIR4" "$TMPDIR5" "$TMPDIR6" \
+         "$TMPDIR7" "$TMPDIR8" "$STDOUT_LOG" \
+         "$STDERR_LOG1" "$STDERR_LOG2" "$STDERR_LOG3" "$STDERR_LOG4" "$STDERR_LOG5" \
+         "$STDERR_LOG6" "$STDERR_LOG7" "$STDERR_LOG8"
 }
 trap cleanup EXIT
 
@@ -236,6 +242,72 @@ else
   ko "TT severity class" "no low/high severity element found in DOM"
 fi
 
+# --- Run 7: page counter fixture (v1.1) ---
+echo ""
+echo "--- Run 7 (page counter fixture, v1.1) ---"
+run_chromium "$TMPDIR7" "$STDERR_LOG7" "file://$REPO/tests/fixtures/test-page-counter.html"
+# The page counter is mounted as a shadow-DOM root by content.js after the
+# adapter scan completes. chromium --dump-dom includes shadow-root contents.
+# We assert on:
+#   1. The counter markup appears in the dumped DOM
+#   2. The counter shows "NOAIS" label + a numeric count
+#   3. The data-noais-page-counter attribute is present on the host
+#   4. The data-noais-breakdown attribute is set on at least one badge
+#      (proves the v1.1 createBadge refactor is wired through)
+assert_log_contains '\[NOAIS content\] v1\.0\.0 loaded' "$STDERR_LOG7" \
+  "content script loaded on page-counter fixture"
+if grep -qE 'noais-page-counter' "$STDOUT_LOG"; then
+  ok "page counter widget markup is in the DOM"
+else
+  ko "page counter widget" "no 'noais-page-counter' string in dumped DOM"
+fi
+if grep -qE 'NOAIS' "$STDOUT_LOG" && grep -qE 'noais-page-counter' "$STDOUT_LOG"; then
+  ok "page counter shows the NOAIS label"
+else
+  ko "page counter label" "NOAIS label not visible alongside counter markup"
+fi
+if grep -qE 'data-noais-page-counter' "$STDOUT_LOG"; then
+  ok "page counter host has data-noais-page-counter attribute"
+else
+  ko "page counter data-attr" "data-noais-page-counter attribute missing"
+fi
+if grep -qE 'data-noais-breakdown' "$STDOUT_LOG"; then
+  ok "at least one badge carries data-noais-breakdown (v1.1 createBadge refactor)"
+else
+  ko "badge breakdown attr" "no badge has data-noais-breakdown — createBadge refactor not wired"
+fi
+
+# --- Run 8: element-allowlist fixture (v1.1) ---
+echo ""
+echo "--- Run 8 (element-allowlist fixture, v1.1) ---"
+run_chromium "$TMPDIR8" "$STDERR_LOG8" "file://$REPO/tests/fixtures/test-element-allowlist.html"
+# The element-allowlist module exposes window.NOAIS_ELEMENT_ALLOWLIST. The
+# fixture itself logs its state via console.log so we can grep for it.
+assert_log_contains '\[NOAIS content\] v1\.0\.0 loaded' "$STDERR_LOG8" \
+  "content script loaded on element-allowlist fixture"
+assert_log_contains 'NOAIS_ELEMENT_ALLOWLIST module ready' "$STDERR_LOG8" \
+  "element-allowlist module loaded and self-identifies"
+# The fixture also calls NOAIS_ELEMENT_ALLOWLIST.add() and logs the resulting
+# state, which we verify in the log:
+assert_log_contains 'element-allowlist add ok' "$STDERR_LOG8" \
+  "element-allowlist.add() succeeded in the browser context"
+assert_log_contains 'element-allowlist isAllowed true' "$STDERR_LOG8" \
+  "element-allowlist.isAllowed() returned true after add() (round-trip)"
+# Manifest sanity for v1.1: the new files must be in content_scripts.js
+if jq -e '.content_scripts[0].js | index("content/page-counter.js")' "$EXT/manifest.json" >/dev/null \
+   && jq -e '.content_scripts[0].js | index("content/badge-tooltip.js")' "$EXT/manifest.json" >/dev/null \
+   && jq -e '.content_scripts[0].js | index("content/element-allowlist.js")' "$EXT/manifest.json" >/dev/null; then
+  ok "manifest content_scripts.js includes the 3 new v1.1 files"
+else
+  ko "manifest v1.1 files" "page-counter.js / badge-tooltip.js / element-allowlist.js missing"
+fi
+if jq -e '.content_scripts[0].css | index("content/page-counter.css")' "$EXT/manifest.json" >/dev/null \
+   && jq -e '.content_scripts[0].css | index("content/badge-tooltip.css")' "$EXT/manifest.json" >/dev/null; then
+  ok "manifest content_scripts.css includes page-counter.css + badge-tooltip.css"
+else
+  ko "manifest v1.1 css" "page-counter.css / badge-tooltip.css missing"
+fi
+
 # --- Manifest sanity ---
 VER=$(jq -r '.version' "$EXT/manifest.json")
 [ "$VER" = "1.0.0" ] && ok "manifest version is 1.0.0" || ko "version" "expected 1.0.0, got $VER"
@@ -274,6 +346,12 @@ if [ $FAIL -gt 0 ]; then
   echo ""
   echo "  Run 6 stderr (last 20 lines):"
   tail -20 "$STDERR_LOG6" | sed 's/^/    /'
+  echo ""
+  echo "  Run 7 stderr (last 20 lines):"
+  tail -20 "$STDERR_LOG7" | sed 's/^/    /'
+  echo ""
+  echo "  Run 8 stderr (last 20 lines):"
+  tail -20 "$STDERR_LOG8" | sed 's/^/    /'
   exit 1
 fi
 exit 0

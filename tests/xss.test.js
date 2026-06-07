@@ -151,4 +151,52 @@ tests.push({
   },
 });
 
+tests.push({
+  name: 'XSS: content/page-counter.js is innerHTML-free (v1.1)',
+  fn: () => {
+    const file = path.join(__dirname, '..', 'extension', 'content', 'page-counter.js');
+    assert.ok(fs.existsSync(file), 'content/page-counter.js must exist (v1.1)');
+    const src = fs.readFileSync(file, 'utf8');
+    const codeOnly = src
+      .split('\n')
+      .map((line) => line.replace(/\/\/.*$/, ''))
+      .join('\n')
+      .replace(/(['"`])(?:(?=(\\?))\2.)*?\1/g, '""');
+    const matches = codeOnly.match(/\.innerHTML\s*=/g) || [];
+    assert.strictEqual(matches.length, 0, 'page-counter.js must not use .innerHTML assignment');
+  },
+});
+
+tests.push({
+  name: 'XSS: content/badge-tooltip.js is innerHTML-free (v1.1)',
+  fn: () => {
+    const file = path.join(__dirname, '..', 'extension', 'content', 'badge-tooltip.js');
+    assert.ok(fs.existsSync(file), 'content/badge-tooltip.js must exist (v1.1)');
+    const src = fs.readFileSync(file, 'utf8');
+    const codeOnly = src
+      .split('\n')
+      .map((line) => line.replace(/\/\/.*$/, ''))
+      .join('\n')
+      .replace(/(['"`])(?:(?=(\\?))\2.)*?\1/g, '""');
+    const matches = codeOnly.match(/\.innerHTML\s*=/g) || [];
+    assert.strictEqual(matches.length, 0, 'badge-tooltip.js must not use .innerHTML assignment');
+  },
+});
+
+tests.push({
+  name: 'XSS: content/element-allowlist.js is innerHTML-free (v1.1)',
+  fn: () => {
+    const file = path.join(__dirname, '..', 'extension', 'content', 'element-allowlist.js');
+    assert.ok(fs.existsSync(file), 'content/element-allowlist.js must exist (v1.1)');
+    const src = fs.readFileSync(file, 'utf8');
+    const codeOnly = src
+      .split('\n')
+      .map((line) => line.replace(/\/\/.*$/, ''))
+      .join('\n')
+      .replace(/(['"`])(?:(?=(\\?))\2.)*?\1/g, '""');
+    const matches = codeOnly.match(/\.innerHTML\s*=/g) || [];
+    assert.strictEqual(matches.length, 0, 'element-allowlist.js must not use .innerHTML assignment');
+  },
+});
+
 module.exports = tests;

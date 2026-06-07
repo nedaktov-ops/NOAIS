@@ -143,4 +143,25 @@ tests.push({
   },
 });
 
+tests.push({
+  name: 'content.js: v1.1 wires up NOAIS_PAGE_COUNTER (uBlock-style page counter)',
+  fn: () => {
+    assert.match(CONTENT, /NOAIS_PAGE_COUNTER/);
+  },
+});
+
+tests.push({
+  name: 'content.js: v1.1 wires up NOAIS_BADGE_TOOLTIP (hover breakdown popup)',
+  fn: () => {
+    assert.match(CONTENT, /NOAIS_BADGE_TOOLTIP/);
+  },
+});
+
+tests.push({
+  name: 'content.js: v1.1 wires up NOAIS_ELEMENT_ALLOWLIST (per-element skip)',
+  fn: () => {
+    assert.match(CONTENT, /NOAIS_ELEMENT_ALLOWLIST/);
+  },
+});
+
 module.exports = tests;
