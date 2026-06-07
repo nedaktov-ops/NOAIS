@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "NOAIS",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "NOAIS (No Artificial Intelligence Slop) - detect, mask, and disable AI-generated content on the web.",
 
   "key": "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDjuKJqZzU8FkvR5qTQR+G3S5igLLy60CoSZN4prf6MwvnH01LWWu866c4hwa415MYH8qmqEE+61AOK8RMhoHNelmwRtK6ev49LLSF8A8xpKlkByaqR8rI6jYptIZUxhTEH2IYw3WHrT1eQlO/zy2gFfB40q6U+L9vNJM4mHyvHXKSEt236Bfeix6noVTJRVedFUw9gagkea/O+3xvSFlQyqHrdHuV6SynziBx75bwIaJzKc1PDg3M4cewZ7+eLwkXAq6Ubz853FeF5gGJf0YPHWXN5YcXN0hy0dAhOo4A11VvPlUKIYNkFmwD8B5KFY5Zck2SSPGdNOFhZVs08C6RBAgMBAAECggEAFhuWNQNJEUjO2pVsOcZIvQ1LR32gYviTpQ6C3QQF2u+Q5Vv4RlQ0toD9YJyXh6bqrNnbq+WCgA5WO7Z014ZmvO+YlU13yHSrei5q+km6Hhmc44YLF7k6oWGdZ0Pj4pdeL7dPK85KU9hzlVdIRmBgfGvU2OMzGyr1SWDB3MSY8PU4JhFTs62AsijLXiCvNEsP1CYX1JH1Dn2iasvf1vFKL9Ctih7sZyKnR8GlNje8sAv90vUM69rwbeOuB6LsFmrWKFm1I+s/Lu7C4DwXCvyWSRs0Ur8Q9+GnkPZ17p5tdmJ/bSTC/szrrYd7YrYqCH8RcqGbXq8WeG3qrFVl4fY1KwKBgQD12mejG3TjeGKJVXQls9RjsfvHWzBXQqPEEk2Pnbk3LhF7jH/Jg4B7WS8QO0RZYY0A+pIgFqQQb2L9Q7u402Zl7J8sfn5RDfhnw9joQxi4/rtdC6Ks2YN5JsYfzX57fNmermpQ8jVcmOnD9zRvl1VwUKz+Xl9x3954DC3q3+7UTwKBgQDtHqeEA5hybnRGYN0sXLc0JEX17tKV5ZJav89Di8+ZV5oFVpkX0T/fQGdfgXjunt0kjijd2zCHqxkyQlbgd9LjgJrtHLBsCqn3XbNBQYhG5zecJ3qq/fqbzacxbbdkklvPK2uY0vMJQHJacYot3hkDt6TlNxVsYiuKY1OlaIWKbwKBgQDdKWLvhISLGEGz/05jmDjokjTHqo17AfSmLjzdg+oY7HVHqiVOVuCelaTTui0LJskcZ0xKV3OxYTIwWN0nL+y+pbSu5v+k1KdwWOroTWuRB33u/seRLH6r3qh99XLhjXeK2qXDOY+tQ9WOtvPRqtZuGfT1Qloj61qKrZIk5ttG2wKBgGwP21HbfZ8w3UaxoDo2aruViFijJU9w1zkKTv++eLauaJ/kLlLfZtdsd2/cBmvg9HFTZCZvXPeHLy1rdEJJ+U767h//QhuK5Ji6GBY2Mk/10a8Vgt7obkyQ9ZAeK0TnOnX4mMmF4YKm3zZ+pfVvUUETcU+Qwe+p8aPYzmcEck97AoGAAgx9zkfWAuoHWhQpOJQUWJVXOMpBo81GMl60ROJa0Sbc01S261Rne4CUNBmbKxAoeJWJyOrI6xiR9RaH5YtvWpL4U6+Z+3zZ1NRDnGg8g4LSOzXxL6UKTkEFVCcvPxMtPOl0I7eVbJFUC0FggSCptSr9BTniMxD2TNsOqQsQx3g=",
@@ -40,7 +40,14 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["core/heuristics.js", "core/settings.js", "content/content.js"],
+      "js": [
+        "core/heuristics.js",
+        "core/settings.js",
+        "core/adapters/base.js",
+        "core/adapters/youtube.js",
+        "content/content.js"
+      ],
+      "css": ["styles/adapters.css"],
       "run_at": "document_idle",
       "all_frames": false
     }

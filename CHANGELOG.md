@@ -5,6 +5,62 @@ All notable changes to NOAIS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-06-07
+
+### Added
+
+- **Adapter pattern** — a clean, pluggable way to add per-platform behaviour.
+  - `core/adapters/base.js` — `BaseAdapter` interface + shared helpers (`severityFromScore`, `createBadge`, `applySeverityClass`, `shouldScore`).
+  - `core/adapters/youtube.js` — the first concrete adapter.
+- **YouTube adapter (v0.5)** — detects `ytd-comment-renderer` elements, runs heuristics on each, appends a small NOAIS badge with a colour-coded severity outline on the comment.
+  - Hostname match: `youtube.com`, `m.youtube.com`, `youtu.be` (suffix-only, no wildcards).
+  - Text extraction: `#content-text` (the YouTube convention).
+  - Decorate: adds `noais-score-zero|low|high` class to the comment element and appends a `<span class="noais-badge">` with `NOAIS`, the score, and `+N phrases` if any.
+  - **Soft mode** (default in v0.5): badge + outline only — comment stays readable.
+  - **Hard mode**: dim + blur the comment (`opacity: 0.35; filter: blur(2px)`) when `noais_hard_mode_sites[host] === true`. The user can hover to read.
+  - **MutationObserver** on `document.body` for infinite scroll; new comments are scanned + decorated automatically.
+- **Short-text mode for heuristics** (`analyzeText(text, { shortTextMode: true })`):
+  - Minimum word count drops to 5 (from 50).
+  - Only TTR + entropy are computed (burstiness + hapax are unreliable on short text).
+  - Re-tuned thresholds: TTR human ~0.90 / AI ~0.70, entropy human ~6.0 / AI ~4.5.
+  - **AI text on short mode scores ~54, human text ~38** (16-point separation in headless tests on the v0.5 fixture).
+- **Storage schema (additive)**:
+  ```json
+  {
+    "noais_enabled": true,
+    "noais_global_sensitivity": 100,
+    "noais_site_overrides": {},
+    "noais_hard_mode_sites": {}     // NEW in v0.5: { hostname: true } = hard mode
+  }
+  ```
+- **Manifest v0.5.0**:
+  - `content_scripts.js` now loads in order: `core/heuristics.js`, `core/settings.js`, `core/adapters/base.js`, `core/adapters/youtube.js`, `content/content.js`. Base before youtube, both before content, so the IIFE bindings pick up `NOAIS_ADAPTERS` correctly.
+  - `content_scripts.css` adds `styles/adapters.css` so the badge + severity outlines are always styled.
+- **Test infrastructure**:
+  - `tests/fixtures/test-youtube.html` — 5 static comments + 1 injected after 100ms (for MutationObserver). Uses `data-noais-test-host="www.youtube.com"` on `<html>` so the headless test can simulate a YouTube host.
+  - `tests/heuristics-short.test.js` — 8 tests for `shortTextMode`.
+  - `tests/adapter-structure.test.js` — 11 static checks for manifest wiring, no-innerHTML, shortTextMode declaration, CSS includes dark mode.
+  - `tests/content-structure.test.js` — +5 v0.5-specific checks.
+  - `tests/headless-integration.sh` — now 19 assertions (was 14). Adds a YouTube fixture run: confirms the adapter logs `initial scan: 4 elements`, finds NOAIS badges in the dumped DOM, and verifies a non-zero severity class on at least one comment.
+- **DOM data-attribute test hook** in content.js: `data-noais-test-host="example.com"` on `<html>` overrides `location.hostname` for adapter dispatch. Visible across MV3 isolated worlds (a `window.__NOAIS_TEST_HOSTNAME__` hook would not be). No-op in production because real users never set it.
+
+### Quality
+- **All tests green**: 132 Node + 19 headless = **151 / 151**.
+- **End-to-end headless** (`make test-headless`):
+  - Stable extension ID `jbllajhognjaknnofagmmladkdicojgg` (same across all three runs).
+  - AI fixture: `score=81/100, words=436, phrases: 0` (red bar).
+  - Human fixture: `score=23/100, words=380, phrases: 0` (green bar).
+  - YouTube fixture: adapter logs `initial scan: 4 elements`, 14 NOAIS badges appear in the DOM, at least one comment has a non-zero severity class.
+- **XSS discipline** preserved: every user-controllable string in `adapters/base.js`, `adapters/youtube.js`, and `content/content.js` is rendered via `textContent` (or via `classList.add` / `dataset.*`), never `innerHTML`. Enforced by static-grep tests.
+- **No new dependencies**. Adapter pattern is plain JS, no jsdom, no extra npm packages.
+- **No tests skipped, no `it.todo` placeholders**, no `--bail`. Every assertion is concrete.
+
+### Notes
+- **Hard mode UI deferred to v0.5.1** — the v0.5 storage key works and the CSS is wired, but the options page doesn't yet expose per-site hard-mode toggles. Users can flip the key in DevTools (`chrome.storage.local.set({ noais_hard_mode_sites: { 'www.youtube.com': true } })`).
+- **MutationObserver overhead** — the observer fires on every DOM mutation, but `scheduleScan` is rAF-throttled and short-circuits on already-scanned elements. A long YouTube page with 1000 comments takes a single initial scan, then idles.
+- **Test hook is documented** in `extension/content/content.js` so anyone reading the code understands it's a no-op in production.
+- v0.5 keeps v0.4 fully backwards compatible: existing v0.4 storage blobs are read unchanged, no migration needed.
+
 ## [0.4.0] - 2026-06-07
 
 ### Added

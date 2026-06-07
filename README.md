@@ -17,7 +17,8 @@ The web is filling up with low-quality, auto-generated "slop" — text, images, 
 
 ## Features (current)
 
-- **v0.4.0** (current): **Options page** with global sensitivity slider (0–100), per-site curated list (YouTube, Facebook, Instagram, TikTok, Twitter/X, Reddit, LinkedIn), add-custom-site, live `chrome.storage.onChanged` sync. Content script respects per-site overrides and short-circuits to "Off" for disabled sites. Stable extension ID `jbllajhognjaknnofagmmladkdicojgg` for unpacked development. 94 Node + 14 headless tests = 108 / 108 green.
+- **v0.5.0** (current): **YouTube adapter** — detects `ytd-comment-renderer` elements and decorates them with a small NOAIS badge (NOAIS 54, etc.) and a colour-coded severity outline. Soft mode (default) = badge only. Hard mode = dim + blur. **MutationObserver** for infinite scroll. New `shortTextMode` for the heuristics engine handles 5+ word texts. 132 Node + 19 headless tests = **151 / 151 green**.
+- v0.4.0: **Options page** with global sensitivity slider (0–100), per-site curated list (YouTube, Facebook, Instagram, TikTok, Twitter/X, Reddit, LinkedIn), add-custom-site, live `chrome.storage.onChanged` sync. Content script respects per-site overrides and short-circuits to "Off" for disabled sites. Stable extension ID `jbllajhognjaknnofagmmladkdicojgg` for unpacked development.
 - v0.3.0: Heuristic AI-likely scoring (0–100) using four stylometric metrics — burstiness, type-token ratio, Shannon entropy, hapax ratio. Combined with v0.2's hard-coded phrase counter. Validated: human text 23/100 (green), AI text 81/100 (red). 100% on-device, zero dependencies, no models.
 - v0.2.0: Scans every page for 5 hard-coded AI-typical phrases ("As an AI language model", "I am an AI", etc.) and shows a colour-coded count in the popup. Content script + message passing + live count.
 - v0.1.0: Hello-world popup with working enable/disable toggle that persists across browser restarts. 100% on-device. Zero network calls. Dark-mode aware. Accessible (ARIA labels, keyboard focus).
@@ -25,12 +26,12 @@ The web is filling up with low-quality, auto-generated "slop" — text, images, 
 
 ## Features (planned)
 
-- v0.5: YouTube adapter (comments, descriptions)
 - v0.6: Facebook adapter (posts, comments)
-- v0.7: Optional tiny ONNX model (< 5 MB) for improved accuracy
-- v0.8: Unit tests + CI
-- v0.9: Documentation site
-- v1.0: First public release (GitHub Releases + Firefox Add-ons)
+- v0.7: Instagram + TikTok adapters
+- v0.8: Optional tiny ONNX model (< 5 MB) for improved accuracy
+- v0.9: Vitest + CI on GitHub Actions
+- v0.10: Documentation site (VitePress)
+- v1.0: First public release (GitHub Releases + Firefox AMO)
 
 ## Install (coming in v1.0)
 
