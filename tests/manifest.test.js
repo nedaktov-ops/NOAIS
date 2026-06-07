@@ -18,7 +18,7 @@ const tests = [];
 tests.push({
   name: 'manifest: version is 0.4.0',
   fn: () => {
-    assert.strictEqual(MANIFEST.version, '0.6.0');
+    assert.strictEqual(MANIFEST.version, '0.7.0');
   },
 });
 

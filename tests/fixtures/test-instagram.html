@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en" data-noais-test-host="instagram.com">
+<head>
+  <meta charset="utf-8">
+  <title>Instagram fixture — NOAIS v0.7</title>
+  <!-- Mimics an Instagram feed page. Each post is an <article>;
+       caption text lives in a nested <div dir="auto">. -->
+  <style>
+    body { font-family: Helvetica, Arial, sans-serif; max-width: 700px; margin: 24px auto; padding: 0 16px; background: #fafafa; }
+    article { display: block; border: 1px solid #dbdbdb; border-radius: 8px; padding: 12px; margin: 12px 0; background: #fff; }
+    h2 { font-size: 1.2em; }
+    .actions { color: #8e8e8e; font-size: 0.9em; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <h2>NOAIS v0.7 fixture: Instagram feed</h2>
+  <p>This page mimics the Instagram post DOM. NOAIS will scan each
+     <code>&lt;article&gt;</code> and append a badge.</p>
+
+  <article>
+    <div dir="auto">First post!</div>
+    <div class="actions">Like · Comment · Share</div>
+  </article>
+
+  <article>
+    <div dir="auto">Ok this is actually fire though</div>
+    <div class="actions">Like · Comment · Share</div>
+  </article>
+
+  <article>
+    <div dir="auto">This is so AI generated, the burstiness is just off the charts</div>
+    <div class="actions">Like · Comment · Share</div>
+  </article>
+
+  <article>
+    <div dir="auto">Ok I just bought this and I'm genuinely impressed by the build quality.</div>
+    <div class="actions">Like · Comment · Share</div>
+  </article>
+
+  <script>
+    // Simulate infinite scroll: inject one more post after 100ms.
+    // The MutationObserver in content.js should pick this up.
+    setTimeout(() => {
+      const article = document.createElement('article');
+      const body = document.createElement('div');
+      body.setAttribute('dir', 'auto');
+      body.textContent = 'This app is so cool, the algorithm is on point';
+      article.appendChild(body);
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+      actions.textContent = 'Like · Comment · Share';
+      article.appendChild(actions);
+      document.body.appendChild(article);
+    }, 100);
+  </script>
+</body>
+</html>
