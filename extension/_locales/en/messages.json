@@ -176,5 +176,65 @@
   "tooltip_dont_show": {
     "message": "Don't show this",
     "description": "Link in the badge tooltip that adds the element to the per-element allowlist."
+  },
+  "why_panel_title": {
+    "message": "Why NOAIS scored this page",
+    "description": "Title of the side panel that explains the per-page AI score."
+  },
+  "why_panel_subtitle": {
+    "message": "A breakdown of how NOAIS reached its verdict",
+    "description": "Subtitle of the side panel."
+  },
+  "why_panel_score": {
+    "message": "Score",
+    "description": "Heading for the score region of the side panel."
+  },
+  "why_panel_score_high": {
+    "message": "Likely AI-generated",
+    "description": "Score label when the AI score is 70 or above."
+  },
+  "why_panel_score_mid": {
+    "message": "Possibly AI-generated",
+    "description": "Score label when the AI score is 40-69."
+  },
+  "why_panel_score_low": {
+    "message": "Likely human-written",
+    "description": "Score label when the AI score is 1-39."
+  },
+  "why_panel_waiting": {
+    "message": "Waiting for page analysis…",
+    "description": "Default label shown in the score region before any analysis has been broadcast."
+  },
+  "why_panel_breakdown": {
+    "message": "Breakdown",
+    "description": "Heading for the per-signal breakdown of the score."
+  },
+  "why_panel_breakdown_vocab": {
+    "message": "Vocabulary entropy",
+    "description": "Label for the vocabulary entropy row in the breakdown."
+  },
+  "why_panel_breakdown_perplexity": {
+    "message": "Perplexity",
+    "description": "Label for the perplexity row in the breakdown."
+  },
+  "why_panel_breakdown_burstiness": {
+    "message": "Burstiness",
+    "description": "Label for the burstiness row in the breakdown."
+  },
+  "why_panel_explain": {
+    "message": "How the score is calculated",
+    "description": "Heading for the explainer section in the side panel."
+  },
+  "why_panel_explain_body": {
+    "message": "NOAIS analyses every text node on the page and combines three signals — vocabulary entropy, perplexity, and burstiness — into a single 0-100 score. Higher means more likely to be AI-generated. Everything runs locally in your browser; no text ever leaves your device.",
+    "description": "Body of the explainer section."
+  },
+  "why_panel_privacy": {
+    "message": "Your privacy",
+    "description": "Heading for the privacy section in the side panel."
+  },
+  "why_panel_privacy_body": {
+    "message": "NOAIS never makes a network call. The score, the breakdown, and your settings stay on this device. To learn more, see the PRIVACY.md document shipped with the extension.",
+    "description": "Body of the privacy section."
   }
 }
