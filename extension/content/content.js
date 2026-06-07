@@ -1,4 +1,4 @@
-// NOAIS content script - v0.6.0
+// NOAIS content script - v0.7.0
 // Scans the current page for AI-generated content using:
 //   1. Hard-coded AI-phrase counter (v0.2, kept for backwards compat).
 //   2. Heuristic statistical analysis (v0.3, v0.4 sensitivity-aware).
@@ -94,11 +94,12 @@
   function pickAdapter(hostname) {
     if (!window.NOAIS_ADAPTERS) return null;
     // The adapters self-register on the global when their script runs.
-    // For v0.5, only YouTube is supported.
+    // v0.5: YouTube. v0.6: Facebook. v0.7: Instagram + TikTok.
     const candidates = [
       window.NOAIS_YOUTUBE_ADAPTER,
       window.NOAIS_FACEBOOK_ADAPTER,
-      // future: window.NOAIS_INSTAGRAM_ADAPTER, etc.
+      window.NOAIS_INSTAGRAM_ADAPTER,
+      window.NOAIS_TIKTOK_ADAPTER,
     ].filter(Boolean);
     const effectiveHostname = (hostname || '').toLowerCase();
     for (const a of candidates) {
@@ -300,7 +301,7 @@
         ? `DISABLED (site=${r.breakdown && r.breakdown.site})`
         : `score=${r.score}/100, words=${r.wordCount}`;
       const note = settingsLoaded ? '' : ' (settings not yet loaded)';
-      console.log(`[NOAIS content] v0.6.0 loaded on ${location.href}; phrases: ${r.count}, ${status}, sensitivity: ${effective.sensitivity}, hardMode: ${effective.hardMode}${note}`);
+      console.log(`[NOAIS content] v0.7.0 loaded on ${location.href}; phrases: ${r.count}, ${status}, sensitivity: ${effective.sensitivity}, hardMode: ${effective.hardMode}${note}`);
     } catch (e) { /* innerText may throw on detached documents; ignore */ }
   }
 })();

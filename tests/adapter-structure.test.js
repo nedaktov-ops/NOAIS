@@ -16,8 +16,8 @@ const CSS = fs.readFileSync(path.join(ROOT, 'extension/styles/adapters.css'), 'u
 const tests = [];
 
 tests.push({
-  name: 'adapter-structure: manifest version is 0.6.0',
-  fn: () => assert.strictEqual(MANIFEST.version, '0.6.0')
+  name: 'adapter-structure: manifest version is 0.7.0',
+  fn: () => assert.strictEqual(MANIFEST.version, '0.7.0')
 });
 
 tests.push({
@@ -82,6 +82,28 @@ tests.push({
     assert.ok(fbIdx >= 0, 'core/adapters/facebook.js listed');
     assert.ok(contentIdx >= 0, 'content/content.js listed');
     assert.ok(fbIdx < contentIdx, 'facebook.js loaded before content.js');
+  }
+});
+
+tests.push({
+  name: 'adapter-structure: manifest content_scripts.js includes instagram.js + tiktok.js BEFORE content.js',
+  fn: () => {
+    const js = MANIFEST.content_scripts[0].js;
+    const igIdx = js.indexOf('core/adapters/instagram.js');
+    const ttIdx = js.indexOf('core/adapters/tiktok.js');
+    const contentIdx = js.indexOf('content/content.js');
+    assert.ok(igIdx >= 0, 'core/adapters/instagram.js listed');
+    assert.ok(ttIdx >= 0, 'core/adapters/tiktok.js listed');
+    assert.ok(igIdx < contentIdx, 'instagram.js loaded before content.js');
+    assert.ok(ttIdx < contentIdx, 'tiktok.js loaded before content.js');
+  }
+});
+
+tests.push({
+  name: 'adapter-structure: content.js pickAdapter() dispatches instagram + tiktok',
+  fn: () => {
+    assert.match(CONTENT, /NOAIS_INSTAGRAM_ADAPTER/);
+    assert.match(CONTENT, /NOAIS_TIKTOK_ADAPTER/);
   }
 });
 
