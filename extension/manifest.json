@@ -33,7 +33,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["core/heuristics.js", "content/content.js"],
+      "js": ["core/heuristics.js", "core/settings.js", "content/content.js"],
       "run_at": "document_idle",
       "all_frames": false
     }
