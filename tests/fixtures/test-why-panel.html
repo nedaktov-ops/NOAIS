@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Test fixture: NOAIS Why side panel (new-tab fallback)</title>
+  <link rel="stylesheet" href="../styles/adapters.css">
+</head>
+<body>
+  <main>
+    <h1 class="title" id="panel-title">…</h1>
+    <p class="subtitle" id="panel-subtitle">A breakdown of how NOAIS reached its verdict</p>
+
+    <section class="card score-card" aria-labelledby="score-title">
+      <h2 class="card-title" id="score-title">Score</h2>
+      <div class="score-ring" id="score-ring">
+        <span class="score-value" id="score-value">–</span>
+        <span class="score-unit">/100</span>
+      </div>
+      <p class="score-label" id="score-label">Waiting for page analysis…</p>
+    </section>
+
+    <section class="card breakdown-card" aria-labelledby="breakdown-title">
+      <h2 class="card-title" id="breakdown-title">Breakdown</h2>
+      <ul class="breakdown-list" id="breakdown-list">
+        <li class="breakdown-row" data-kind="vocab">
+          <span class="breakdown-label">Vocabulary entropy</span>
+          <span class="breakdown-value" id="breakdown-vocab">–</span>
+        </li>
+        <li class="breakdown-row" data-kind="perplexity">
+          <span class="breakdown-label">Perplexity</span>
+          <span class="breakdown-value" id="breakdown-perplexity">–</span>
+        </li>
+        <li class="breakdown-row" data-kind="burstiness">
+          <span class="breakdown-label">Burstiness</span>
+          <span class="breakdown-value" id="breakdown-burstiness">–</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="card explain-card">
+      <h2 class="card-title">How the score is calculated</h2>
+      <p class="card-body">
+        NOAIS analyses every text node on the page and combines three
+        signals into a single 0-100 score. Higher means more likely to be
+        AI-generated.
+      </p>
+    </section>
+
+    <section class="card privacy-card">
+      <h2 class="card-title">Your privacy</h2>
+      <p class="card-body">
+        NOAIS never makes a network call. The score, the breakdown, and
+        your settings stay on this device.
+      </p>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Test fixture: NOAIS welcome page</title>
+  <link rel="stylesheet" href="../styles/adapters.css">
+</head>
+<body>
+  <main>
+    <h1 id="welcome-title">…</h1>
+    <p class="subtitle">No Artificial Intelligence Slop</p>
+
+    <section class="card card-what" data-card="what">
+      <h2 class="card-title">What NOAIS does</h2>
+      <p class="card-body">
+        NOAIS scans every web page on-device for AI-generated text.
+      </p>
+    </section>
+
+    <section class="card card-mode" data-card="mode">
+      <h2 class="card-title">Pick your mode</h2>
+      <p class="card-body">
+        Soft mode (default) adds a small badge. Hard mode dims and blurs.
+      </p>
+    </section>
+
+    <section class="card card-tour" data-card="tour">
+      <h2 class="card-title">Tour the UI</h2>
+      <p class="card-body">
+        Click the toolbar icon to see the score for the current page.
+      </p>
+      <button type="button" id="take-tour" class="secondary-button">Take the tour</button>
+    </section>
+
+    <section class="card card-privacy" data-card="privacy">
+      <h2 class="card-title">Privacy promise</h2>
+      <p class="card-body">
+        NOAIS makes <strong>zero network calls</strong>. See PRIVACY.md.
+      </p>
+    </section>
+
+    <footer>
+      <button type="button" id="get-started" class="primary-button">Get started</button>
+    </footer>
+  </main>
+</body>
+</html>
