@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en" data-noais-test-host="www.facebook.com">
+<head>
+  <meta charset="utf-8">
+  <title>Facebook fixture — NOAIS v0.6</title>
+  <!-- Mimics a Facebook news-feed page with [role="article"] posts.
+       Text content lives in nested <div dir="auto"> elements. -->
+  <style>
+    body { font-family: Helvetica, Arial, sans-serif; max-width: 700px; margin: 24px auto; padding: 0 16px; }
+    [role="article"] { display: block; border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin: 12px 0; background: #fff; }
+    h2 { font-size: 1.2em; }
+    .actions { color: #65676b; font-size: 0.9em; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <h2>NOAIS v0.6 fixture: Facebook news feed</h2>
+  <p>This page mimics the Facebook post DOM. NOAIS will scan each
+     <code>[role="article"]</code> and append a badge.</p>
+
+  <div role="article">
+    <div dir="auto">First post! 🎉</div>
+    <div class="actions">Like · Reply · Share</div>
+  </div>
+
+  <div role="article">
+    <div dir="auto">It is important to note that the new model demonstrates a significant improvement over its predecessor. Furthermore, the architecture leverages a novel attention mechanism that allows for greater contextual understanding. Additionally, the training process incorporates a comprehensive dataset.</div>
+    <div class="actions">Like · Reply · Share</div>
+  </div>
+
+  <div role="article">
+    <div dir="auto">Ok I just got back from the trip. The hotel was way nicer than the photos suggested. Pool was open till 11pm which I didn't expect. Only real complaint: the airport shuttle ran 25 minutes late. Otherwise, would go back.</div>
+    <div class="actions">Like · Reply · Share</div>
+  </div>
+
+  <div role="article">
+    <div dir="auto">As an AI language model, I do not have personal experiences, but I can provide a comprehensive overview of the topic. It is important to note that the subject matter has been extensively studied. Furthermore, the underlying principles can be broken down into three primary categories. Additionally, the implications of these principles extend across a wide range of applications.</div>
+    <div class="actions">Like · Reply · Share</div>
+  </div>
+
+  <script>
+    // Simulate infinite scroll: inject one more post after 100ms.
+    // The MutationObserver in content.js should pick this up.
+    setTimeout(() => {
+      const article = document.createElement('div');
+      article.setAttribute('role', 'article');
+      const body = document.createElement('div');
+      body.setAttribute('dir', 'auto');
+      body.textContent = 'I am an ai and I think this thread is good. Furthermore, ' +
+                         'it is important to note that the discussion aligns with current ' +
+                         'best practices. Additionally, the moderation demonstrates a ' +
+                         'significant attention to detail.';
+      article.appendChild(body);
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+      actions.textContent = 'Like · Reply · Share';
+      article.appendChild(actions);
+      document.body.appendChild(article);
+    }, 100);
+  </script>
+</body>
+</html>

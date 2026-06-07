@@ -16,8 +16,8 @@ const CSS = fs.readFileSync(path.join(ROOT, 'extension/styles/adapters.css'), 'u
 const tests = [];
 
 tests.push({
-  name: 'adapter-structure: manifest version is 0.5.0',
-  fn: () => assert.strictEqual(MANIFEST.version, '0.5.0')
+  name: 'adapter-structure: manifest version is 0.6.0',
+  fn: () => assert.strictEqual(MANIFEST.version, '0.6.0')
 });
 
 tests.push({
@@ -70,6 +70,18 @@ tests.push({
   name: 'adapter-structure: youtube.js exposes NOAIS_YOUTUBE_ADAPTER',
   fn: () => {
     assert.match(ADAPTER_YT, /NOAIS_YOUTUBE_ADAPTER/);
+  }
+});
+
+tests.push({
+  name: 'adapter-structure: manifest content_scripts.js includes facebook.js BEFORE content.js',
+  fn: () => {
+    const js = MANIFEST.content_scripts[0].js;
+    const fbIdx = js.indexOf('core/adapters/facebook.js');
+    const contentIdx = js.indexOf('content/content.js');
+    assert.ok(fbIdx >= 0, 'core/adapters/facebook.js listed');
+    assert.ok(contentIdx >= 0, 'content/content.js listed');
+    assert.ok(fbIdx < contentIdx, 'facebook.js loaded before content.js');
   }
 });
 
