@@ -29,7 +29,7 @@
     "open_in_tab": true
   },
 
-  "permissions": ["storage", "activeTab"],
+  "permissions": ["storage", "activeTab", "tabs"],
 
   "host_permissions": ["<all_urls>"],
 
@@ -42,6 +42,7 @@
       "matches": ["<all_urls>"],
       "js": [
         "core/heuristics.js",
+        "core/storage-keys.js",
         "core/settings.js",
         "core/adapters/base.js",
         "core/adapters/youtube.js",

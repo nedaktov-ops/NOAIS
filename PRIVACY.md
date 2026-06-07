@@ -21,12 +21,19 @@ NOAIS is a fully on-device browser extension. **It does not collect, transmit, o
 
 All state is local-only, kept in your browser's `chrome.storage.local` (or Firefox's `browser.storage.local`). Nothing is ever synced, uploaded, or transmitted.
 
-| Storage key | Type | Purpose | Lifetime |
-|---|---|---|---|
-| `noais_enabled` | `boolean` | Master on/off switch. | Until you uninstall or change it. |
-| `noais_global_sensitivity` | `number` (0–100) | Global scoring threshold. | Until you uninstall or change it. |
-| `noais_site_overrides` | `object` (hostname → boolean) | Per-site enable/disable. | Until you uninstall or change it. |
-| `noais_hard_mode_sites` | `object` (hostname → boolean) | Per-site hard-mode (dim+blur) toggle. | Until you uninstall or change it. |
+Starting in v1.1, three small settings (`noais_enabled`, `noais_global_sensitivity`, `noais_hard_mode_sites`) may be synced to your browser's `chrome.storage.sync` if Chrome Sync (or Firefox Sync) is enabled. This sync is end-to-end managed by your browser and is the only data that ever leaves the device, and it does so only via the browser's own sync service. You can disable sync in your browser settings; NOAIS will fall back to local storage automatically.
+
+| Storage key | Type | Area | Purpose | Lifetime |
+|---|---|---|---|---|
+| `noais_enabled` | `boolean` | sync + local | Master on/off switch. | Until you uninstall or change it. |
+| `noais_global_sensitivity` | `number` (0–100) | sync + local | Global scoring threshold. | Until you uninstall or change it. |
+| `noais_site_overrides` | `object` (hostname → boolean) | local | Per-site enable/disable. Stays on local because a user with many custom sites can exceed the 8 KB sync quota. | Until you uninstall or change it. |
+| `noais_hard_mode_sites` | `object` (hostname → boolean) | sync + local | Per-site hard-mode (dim+blur) toggle. | Until you uninstall or change it. |
+| `noais_page_counter_enabled` | `boolean` | local | (v1.1) Whether the page-counter widget is shown. Default `true`. | Until you uninstall or change it. |
+| `noais_page_counter_position` | `{x, y}` or `null` | local | (v1.1) Saved position after dragging. | Until you uninstall or change it. |
+| `noais_element_allowlist` | `object` (hostname → { textHash16: true }) | local | (v1.1) "Don't show this element" allowlist. Hash is the first 16 hex chars of `SHA-256(text.slice(0, 200).toLowerCase())`. | Until you uninstall or remove the entry. |
+| `noais_tab_overrides` | `object` (tabId → boolean) | local | (v1.1) Per-tab enable/disable. Auto-cleared when the tab closes. | Until the tab is closed. |
+| `noais_last_scan` | `object` (tabId → { count, scannedAt }) | local | (v1.1) The popup's "On this page" stats. | Until the tab is closed. |
 
 You can inspect or wipe these at any time:
 
@@ -52,12 +59,12 @@ The extension manifest declares these permissions, and only these:
 |---|---|
 | `storage` | To read/write the four keys listed above. |
 | `activeTab` | To access the current page's URL (so the extension can decide whether the current hostname is on the user's per-site list). The URL is not stored, not sent anywhere, not logged. |
+| `tabs` (added in v1.1) | Used **only** for the `chrome.tabs.onRemoved` event, which fires when a tab closes. We use this to clean up the per-tab override entry. The extension does **not** enumerate tabs, read tab titles, or read tab URLs. |
 | `<all_urls>` (host permission) | Required because the per-site allowlist is user-extensible, and the user may add any hostname. NOAIS does **not** send the URL anywhere. |
 
 The extension does **not** request:
 
 - `webRequest` / `webRequestBlocking` (no network interception)
-- `tabs` (no tab enumeration)
 - `cookies` (no cookie access)
 - `history` (no browsing-history access)
 - `bookmarks` (no bookmark access)

@@ -67,18 +67,21 @@ tests.push({
 });
 
 tests.push({
-  name: 'manifest: content_scripts ordering: heuristics, settings, content',
+  name: 'manifest: content_scripts ordering: heuristics, storage-keys, settings, content',
   fn: () => {
     const js = MANIFEST.content_scripts[0].js;
     const hIdx = js.indexOf('core/heuristics.js');
+    const skIdx = js.indexOf('core/storage-keys.js');
     const sIdx = js.indexOf('core/settings.js');
     const cIdx = js.indexOf('content/content.js');
     assert.ok(hIdx >= 0, 'heuristics.js not in content_scripts');
+    assert.ok(skIdx >= 0, 'storage-keys.js not in content_scripts');
     assert.ok(sIdx >= 0, 'settings.js not in content_scripts');
     assert.ok(cIdx >= 0, 'content.js not in content_scripts');
-    assert.ok(hIdx < sIdx, 'heuristics.js must load before settings.js');
+    assert.ok(hIdx < skIdx, 'heuristics.js must load before storage-keys.js');
+    assert.ok(skIdx < sIdx, 'storage-keys.js must load before settings.js');
     assert.ok(sIdx < cIdx, 'settings.js must load before content.js');
-  },
+  }
 });
 
 tests.push({
@@ -99,11 +102,12 @@ tests.push({
 });
 
 tests.push({
-  name: 'manifest: permissions include storage and activeTab',
+  name: 'manifest: permissions include storage, activeTab, and tabs (v1.1)',
   fn: () => {
     assert.ok(MANIFEST.permissions.includes('storage'));
     assert.ok(MANIFEST.permissions.includes('activeTab'));
-  },
+    assert.ok(MANIFEST.permissions.includes('tabs'), 'tabs permission is required for chrome.tabs.onRemoved per-tab override cleanup (v1.1)');
+  }
 });
 
 tests.push({
