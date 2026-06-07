@@ -5,6 +5,38 @@ All notable changes to NOAIS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2026-06-07
+
+### First public release
+
+This is the first NOAIS release that's intended for end users. Everything from v0.0 to v0.9 is included; the v1.0 milestone is **packaging, privacy disclosure, and release metadata** — no new features.
+
+### Added
+- **`make package` target** — builds `dist/NOAIS-v1.0.0-chrome.zip` and `dist/NOAIS-v1.0.0-firefox.zip` (44 KB each) from `extension/`. Both zips are identical; the manifest is MV3 with `browser_specific_settings.gecko`, so the same zip works in Chrome, Chromium, Edge, Brave, Opera, and Firefox.
+- **`PRIVACY.md`** — plain-language privacy policy. AMO-compliant. Documents the four local storage keys, the on-device text scanning behaviour, and the three declared permissions (`storage`, `activeTab`, `<all_urls>`).
+- **`EXTENSION-LISTING.md`** — pre-formatted metadata for the Firefox AMO submission form (name, summary, description, categories, tags, permission justifications, post-submission checklist).
+- **`releases/v1.0.0.md`** — release notes (install instructions for Chrome + Firefox, known issues, credits, license).
+- **CI badge** (added in v0.9) now points at a real green workflow run.
+- **`docs/superpowers/specs/2026-06-07-v1.0-public-release-design.md`** — design rationale.
+
+### Changed
+- `manifest.json` bumped to `1.0.0`.
+- `extension/content/content.js` v1.0.0 (load-log banner).
+- README: "Install (coming in v1.0)" placeholder replaced with concrete instructions for both browsers. "What's NOT in v1.0" section added. Permissions table added.
+- All static tests (`manifest.test.js`, `content-structure.test.js`, `adapter-structure.test.js`, `headless-integration.sh`) bumped from `0.9.0` to `1.0.0`.
+
+### Test counts
+- Node: 168 (unchanged from v0.9).
+- Headless: 31 (unchanged from v0.9).
+- **Total: 199/199 green** (verified locally and on CI).
+
+### What's NOT in v1.0
+- Chrome Web Store listing (requires $5 one-time fee; user can submit the same `chrome.zip` to CWS at any time).
+- Firefox AMO listing (submission prep is in `EXTENSION-LISTING.md`; review takes 1–7 days once submitted).
+- ONNX model (v0.8 was genuinely optional; deferred).
+- VitePress docs site (v0.10; deferred to v1.1 — README is sufficient for v1.0).
+- iOS Safari support (out of scope — Linux-only development environment).
+
 ## [0.9.0] - 2026-06-07
 
 ### Added

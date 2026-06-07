@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# NOAIS headless integration test for v0.9
+# NOAIS headless integration test for v1.0
 # Loads the extension in Chromium and asserts:
 #   - Content script runs on AI + human + YouTube fixtures
 #   - Extension ID is stable (key field honored)
@@ -76,7 +76,7 @@ extract_id() {
 }
 
 echo ""
-echo "=== Headless integration test (v0.9) ==="
+echo "=== Headless integration test (v1.0) ==="
 echo "    Extension: $EXT"
 
 # --- Run 1: capture the ID and content-script log ---
@@ -86,7 +86,7 @@ run_chromium "$TMPDIR1" "$STDERR_LOG1" "file://$REPO/tests/fixtures/test-ai.html
 ID1=$(extract_id "$STDERR_LOG1")
 echo "  ID: $ID1"
 
-assert_log_contains '\[NOAIS content\] v0\.9\.0 loaded' "$STDERR_LOG1" \
+assert_log_contains '\[NOAIS content\] v1\.0\.0 loaded' "$STDERR_LOG1" \
   "v0.7 content script loaded"
 assert_log_contains 'sensitivity: 100' "$STDERR_LOG1" \
   "default sensitivity is 100"
@@ -121,7 +121,7 @@ else
 fi
 
 # --- Run 2: verify v0.3 functionality still works on human text ---
-assert_log_contains '\[NOAIS content\] v0\.9\.0 loaded' "$STDERR_LOG2" \
+assert_log_contains '\[NOAIS content\] v1\.0\.0 loaded' "$STDERR_LOG2" \
   "v0.7 content script loaded on human page"
 assert_log_contains 'sensitivity: 100' "$STDERR_LOG2" \
   "sensitivity reported on human page"
@@ -138,7 +138,7 @@ echo ""
 echo "--- Run 3 (YouTube adapter on fixture) ---"
 run_chromium "$TMPDIR3" "$STDERR_LOG3" "file://$REPO/tests/fixtures/test-youtube.html"
 echo ""
-assert_log_contains '\[NOAIS content\] v0\.9\.0 loaded' "$STDERR_LOG3" \
+assert_log_contains '\[NOAIS content\] v1\.0\.0 loaded' "$STDERR_LOG3" \
   "v0.7 content script loaded on YouTube fixture"
 assert_log_contains 'adapter "youtube" initial scan' "$STDERR_LOG3" \
   "YouTube adapter ran an initial scan"
@@ -173,7 +173,7 @@ fi
 echo ""
 echo "--- Run 4 (Facebook adapter on fixture) ---"
 run_chromium "$TMPDIR4" "$STDERR_LOG4" "file://$REPO/tests/fixtures/test-facebook.html"
-assert_log_contains '\[NOAIS content\] v0\.9\.0 loaded' "$STDERR_LOG4" \
+assert_log_contains '\[NOAIS content\] v1\.0\.0 loaded' "$STDERR_LOG4" \
   "v0.7 content script loaded on Facebook fixture"
 assert_log_contains 'adapter "facebook" initial scan' "$STDERR_LOG4" \
   "Facebook adapter ran an initial scan"
@@ -196,7 +196,7 @@ fi
 echo ""
 echo "--- Run 5 (Instagram adapter on fixture) ---"
 run_chromium "$TMPDIR5" "$STDERR_LOG5" "file://$REPO/tests/fixtures/test-instagram.html"
-assert_log_contains '\[NOAIS content\] v0\.9\.0 loaded' "$STDERR_LOG5" \
+assert_log_contains '\[NOAIS content\] v1\.0\.0 loaded' "$STDERR_LOG5" \
   "v0.7 content script loaded on Instagram fixture"
 assert_log_contains 'adapter "instagram" initial scan' "$STDERR_LOG5" \
   "Instagram adapter ran an initial scan"
@@ -218,7 +218,7 @@ fi
 echo ""
 echo "--- Run 6 (TikTok adapter on fixture) ---"
 run_chromium "$TMPDIR6" "$STDERR_LOG6" "file://$REPO/tests/fixtures/test-tiktok.html"
-assert_log_contains '\[NOAIS content\] v0\.9\.0 loaded' "$STDERR_LOG6" \
+assert_log_contains '\[NOAIS content\] v1\.0\.0 loaded' "$STDERR_LOG6" \
   "v0.7 content script loaded on TikTok fixture"
 assert_log_contains 'adapter "tiktok" initial scan' "$STDERR_LOG6" \
   "TikTok adapter ran an initial scan"
@@ -238,7 +238,7 @@ fi
 
 # --- Manifest sanity ---
 VER=$(jq -r '.version' "$EXT/manifest.json")
-[ "$VER" = "0.9.0" ] && ok "manifest version is 0.9.0" || ko "version" "expected 0.9.0, got $VER"
+[ "$VER" = "1.0.0" ] && ok "manifest version is 1.0.0" || ko "version" "expected 1.0.0, got $VER"
 # v0.5+v0.6+v0.7: manifest must include adapters in content_scripts
 if jq -e '.content_scripts[0].css | index("styles/adapters.css")' "$EXT/manifest.json" >/dev/null; then
   ok "manifest content_scripts.css includes styles/adapters.css"
