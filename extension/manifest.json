@@ -1,8 +1,10 @@
 {
   "manifest_version": 3,
   "name": "NOAIS",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "NOAIS (No Artificial Intelligence Slop) - detect, mask, and disable AI-generated content on the web.",
+
+  "key": "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCaB5vvTXvvynPUnMpE8RauF4OtBx23NzyCIXnnSuur7pBOp50o5qRKKbpKGJZ9L7xVYE8IkvnSaB6gvfWenpJwaiJEd8xuyNy5h0VBfkDOizafX0CU/Z/RBHpCT2fvEt3fI3hCmpuef8sn0piEgEFyIdYkjCf8ygEjqzkVytElEP5MtO+DdeDdNs9PQjClFzls26O4CE5Djh79fmDgontCLAL/1B5m+8D9Lp+8r4ZvizGVOeEeIPRtZ0HQVdkg8ur+1vfxnHiIJEKLXLnHcGQyzLQytlCBo1bqbmcPGFdE5w6zpBhR3yYFOe1npZTJ4PmwhBvb/AULI7kFYtoKPYTfAgMBAAECggEANlF7oLLzA3eiTHa0cAaTSHabZX/ub0en634xtqq5nIrHUi2S4zMe+dZoTywHmgMlB/isNmpadmRodKg4v6TNIJ6VEg8rRWBJUpYNCtEiupPmgeJ97GzamMPa95p4HRvKqZ+hD9/lBEqt0o/WYFe4fK7JDV9t1JxKNZFy0qgRBGBDJ/dJ37zlMnBQQfDO28TA4Jn1g9Kf4leWbBR7cGdqwkIP7ROT/p2wAZAcfEjY7U3/HrqLBqJkoNsxLnUj1IAtidiNdYv4PK7Zh1zWZ6t1C7cGkSpvhyTXm5wJXpXaFGlrrJaaeeaECHzyD/IRAWlYfI5zeQSVgGbu3eRG8njluQKBgQDMgXao5JicCWzm4HyWGtiHpKu7lNwtZNnFC7laJoNEuFDO0l2auZiUVQMFBRqtkm7jzki2WfNIqamvVywBRsQHnL84FBRVt3Wjx0VYyxolTdliMJUwMP1n0fkLHslEw0+tHygEVvjO2r9izma4mG9E9rqd4Wwspttc1aVRZ4R/2QKBgQDA0HBZmxWM7A1biKbms+t9bIG9jLzX+tb4AIZgRGC4FDkqbbPSxMHePIOkSHS3egvu6GzbsAIxHVvdJTyroeQeq9AfuOsdVJrmt9YeBtg+03LMpGz7rYcuodpI+VbprKhdzBY6C5TYGV7y3XoQ2ik/pU0k8ygOWL84uevKvo9vdwKBgFDsRdUNJ+pOvH4bhJEtLFN4cNA4VmvMBXQ4cG7g4H635JoCmjGYkWzYuuoom+blE+YnAZTOwTsWj+OnPe1/YCCXAP+iym0kvHNDbgh1zfHG/WciTFaWfB+x8bdZxlDkbEnYE1CsTaYk3yis/e67uwPyEeRZiCGfIRx6GgG9Uav5AoGBAKQ/67UpW05Ut3xGCId2tSB/EnZ6MVR7JizVpaLUHOAyug/eq9TcL5o1Sp7j6ilyGkBGVpU+dl+Idv0H/4rlugI2snCTghXWQK5R5GBnzEaYsa6KUxyCUinzTpPjc5pTrolYlYaU3xLHag7RhG5eqczB79mOGY0/JIYaOzbW5jE5AoGAIoQ3i+0oUnxFdcAOq9g+HkazsVzSw1sUJgvxtHplj6CY99oJBDgSAXDAdA2C71GkUnR02MI6hMhruApd0xuXTTzIBkwVi5+1ZsplZnbg3t/E9eqShD2nmQsd+iIUeoztJopKYp8+9lca83NHLzOOuL81aFWVjogGpG1AbSNm3V8=",
 
   "action": {
     "default_popup": "popup/popup.html",
@@ -20,6 +22,11 @@
     "32": "icons/icon-32.png",
     "48": "icons/icon-48.png",
     "128": "icons/icon-128.png"
+  },
+
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
   },
 
   "permissions": ["storage", "activeTab"],
@@ -42,7 +49,7 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "noais@nedaktov-ops.github.io",
-      "strict_min_version": "109.0"
+      "strict_min_version": "121.0"
     }
   }
 }
