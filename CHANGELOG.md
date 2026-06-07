@@ -5,6 +5,35 @@ All notable changes to NOAIS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-06-07
+
+### Added
+- **Facebook adapter** (`extension/core/adapters/facebook.js`).
+  - Matches `facebook.com`, `m.facebook.com`, `fb.com`, `fb.me`.
+  - Targets `[role="article"]` and extracts the first long-enough `[dir="auto"]` child (≥30 chars).
+  - Runs in `shortTextMode` (re-uses the 5-word minimum + TTR + entropy thresholds from v0.5).
+  - Idempotent — each article is decorated at most once via `dataset.noaisScored`.
+  - Surfaces severity via the same badge / `.noais-score-{zero,low,high}` classes as YouTube.
+- `tests/fixtures/test-facebook.html` — 4 static articles + 1 injected 100 ms after load to
+  exercise the MutationObserver.
+
+### Changed
+- `manifest.json` bumped to `0.6.0`. `content_scripts.js` now loads
+  `core/adapters/facebook.js` after YouTube and before `content/content.js`.
+- `extension/content/content.js` (`v0.6.0`):
+  - `pickAdapter()` now also recognises `window.NOAIS_FACEBOOK_ADAPTER`.
+  - Load-log banner is the only visible change.
+- Existing tests bumped from `0.5.0` to `0.6.0` (`manifest.test.js`, `content-structure.test.js`,
+  `adapter-structure.test.js`).
+- `tests/headless-integration.sh` adds **Run 4** — loads the Facebook fixture in a fresh
+  Chromium profile and asserts the adapter scans, ≥3 badges appear, and at least one
+  element gets a non-zero severity class.
+
+### Test counts
+- Node: 144 (was 132) — added 11 Facebook unit tests + 1 adapter-structure assertion.
+- Headless: 22 (was 19) — added 3 Facebook end-to-end assertions.
+- **Total: 166/166 green.**
+
 ## [0.5.0] - 2026-06-07
 
 ### Added
