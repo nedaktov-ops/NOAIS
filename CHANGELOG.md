@@ -5,6 +5,36 @@ All notable changes to NOAIS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-06-07
+
+### User-facing polish
+
+This is a UX + i18n + sync release. No scoring algorithm changes. Everything that was on-device stays on-device; the only new thing that can leave the device is three small settings that ride on the browser's own sync service.
+
+### Added
+- **First-run welcome page** (`options/welcome.html`). Four cards explain what NOAIS does, the soft vs hard mode choice, where to find the UI, and the privacy promise. Opens automatically on install via `chrome.runtime.onInstalled`. The "Get started" button opens the options page; the welcome tab closes itself.
+- **"Why am I seeing this?" side panel** (`sidepanel/why.html`). A standalone page that renders the current page's AI score and a per-signal breakdown (vocabulary entropy, perplexity, burstiness). Opens via `chrome.sidePanel.open` on Chrome 114+ and Firefox 145+; on older Firefox the popup's "Why?" link opens the same page in a new tab.
+- **Keyboard shortcut**: `Ctrl+Shift+A` (or `Cmd+Shift+A` on macOS) toggles NOAIS on the current site. Wired in `manifest.json`'s `commands` block and handled in `background/keyboard-shortcut.js`.
+- **`chrome.storage.sync`** for three small keys: `noais_enabled`, `noais_global_sensitivity`, `noais_hard_mode_sites`. Per-site overrides and per-element allowlist stay on `chrome.storage.local` (they would blow the 8 KB per-item sync quota). A new `core/sync-helper.js` shim routes reads/writes to the correct area; a sync-status banner in the options page reports whether sync is actually available.
+- **Hard-mode sites card** on the options page. Lets the user pick which sites should dim+blur suspected AI content instead of just adding a badge.
+- **Per-tab disable button** in the popup. Adds an entry to `noais_tab_overrides` that lasts until the tab closes; the background's `chrome.tabs.onRemoved` listener cleans it up.
+- **i18n sweep** (`_locales/en/messages.json`). 60+ strings catalogued; every visible string in the popup, options, welcome, side panel, and tooltip now goes through `chrome.i18n.getMessage`. Manifest `name` and `description` use `__MSG_*__` placeholders. `default_locale: "en"` is set.
+- **Headless fixtures** for the welcome page and the why panel (`tests/fixtures/test-welcome.html`, `tests/fixtures/test-why-panel.html`).
+
+### Changed
+- `manifest.json` bumped to `1.1.0`. Adds `commands`, `side_panel`, the `sidePanel` permission, `default_locale`, and `web_accessible_resources` for the new pages. The popup grew from 280 px to 320 px wide to fit the new "Disable on this site" button and the "Why?" footer link.
+- `extension/background/background.js` is now v1.1.0: imports `keyboard-shortcut.js` via `importScripts`, reads its version from `chrome.runtime.getManifest().version`, fires the welcome-page `chrome.tabs.create` on `onInstalled` with `reason === 'install'`, handles the `OPEN_WHY_PANEL` message by opening `chrome.sidePanel` (or a new tab fallback for Firefox < 145), and registers a `chrome.tabs.onRemoved` listener that prunes per-tab overrides.
+- `PRIVACY.md` updated: documents the sync behaviour, the new `sidePanel` permission, and the Firefox < 145 fallback.
+
+### Test counts
+- Node: 199 → **238** (10 new test files: keyboard-shortcut, i18n, welcome, why-panel, sync-helper, popup-v1.1, options-v1.1, plus v1.1 manifest/manifest version bumps, plus xss.test.js extensions for the new files).
+- Headless: 31 → **39** (Run 7 = welcome page, Run 8 = why-panel new-tab fallback). Plus 2 fixes for the v1.1 version banner.
+- **Total: 277/277 green** (verified locally).
+
+### Risks
+- `chrome.sidePanel` is undefined in Firefox before v145. The popup's "Why?" link falls back to opening `sidepanel/why.html` in a new tab. Verified via headless Run 8.
+- `chrome.storage.sync` has an 8 KB per-item / 100 KB total quota. The three sync keys in v1.1.0 are tiny (< 2 KB even with many hard-mode sites). A `core/sync-helper.js` unit test asserts unknown keys default to local storage (so we never blow the budget by accident).
+
 ## [1.0.0] - 2026-06-07
 
 ### First public release

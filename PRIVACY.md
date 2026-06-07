@@ -1,6 +1,6 @@
 # NOAIS Privacy Policy
 
-**Last updated:** 2026-06-07 (v1.0.0)
+**Last updated:** 2026-06-07 (v1.1.0)
 
 NOAIS is a fully on-device browser extension. **It does not collect, transmit, or store any data on any server.** It does not make network requests of any kind. The only data that exists is stored locally in your browser via the standard `chrome.storage` (or Firefox's equivalent `browser.storage`) API.
 
@@ -60,6 +60,7 @@ The extension manifest declares these permissions, and only these:
 | `storage` | To read/write the four keys listed above. |
 | `activeTab` | To access the current page's URL (so the extension can decide whether the current hostname is on the user's per-site list). The URL is not stored, not sent anywhere, not logged. |
 | `tabs` (added in v1.1) | Used **only** for the `chrome.tabs.onRemoved` event, which fires when a tab closes. We use this to clean up the per-tab override entry. The extension does **not** enumerate tabs, read tab titles, or read tab URLs. |
+| `sidePanel` (added in v1.1) | Lets the extension open the "Why am I seeing this?" side panel via `chrome.sidePanel.open`. The panel renders the page's score using the same on-device data. On Firefox < 145 (where `chrome.sidePanel` is undefined), the popup's "Why?" link opens `sidepanel/why.html` in a new tab instead. |
 | `<all_urls>` (host permission) | Required because the per-site allowlist is user-extensible, and the user may add any hostname. NOAIS does **not** send the URL anywhere. |
 
 The extension does **not** request:

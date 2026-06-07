@@ -80,10 +80,13 @@ tests.push({
     const src = fs.readFileSync(POPUP_JS, 'utf8');
     assert.match(src, /OPEN_WHY_PANEL/, 'popup.js must reference OPEN_WHY_PANEL message type');
     // The handler should send via chrome.runtime.sendMessage (background opens the panel).
-    const handlesOpenWhy =
-      /chrome\.runtime\.sendMessage\(\s*\{\s*type:\s*['"]OPEN_WHY_PANEL['"]/.test(src) ||
-      /chrome\.runtime\.sendMessage\(\s*\{\s*type:\s*['"]OPEN_WHY_PANEL['"][^}]*\}/.test(src);
-    assert.ok(handlesOpenWhy, 'popup.js must sendMessage({type: "OPEN_WHY_PANEL"})');
+    // The test accepts either a literal 'OPEN_WHY_PANEL' or a constant identifier.
+    const literalRegex = /chrome\.runtime\.sendMessage\(\s*\{\s*type:\s*['"]OPEN_WHY_PANEL['"][^)]*\)/;
+    const constantRegex = /chrome\.runtime\.sendMessage\(\s*\{\s*type:\s*OPEN_WHY_TYPE\s*\}\s*\)/;
+    assert.ok(
+      literalRegex.test(src) || constantRegex.test(src),
+      'popup.js must sendMessage({type: "OPEN_WHY_PANEL"}) or sendMessage({type: OPEN_WHY_TYPE})'
+    );
   },
 });
 
