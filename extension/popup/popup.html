@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NOAIS</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1 class="title">NOAIS</h1>
+      <p class="subtitle">No Artificial Intelligence Slop</p>
+    </header>
+
+    <section class="toggle-section" aria-labelledby="toggle-label">
+      <label class="switch" for="toggle">
+        <input type="checkbox" id="toggle" aria-labelledby="toggle-label">
+        <span class="slider" aria-hidden="true"></span>
+      </label>
+      <span id="toggle-label" class="status" aria-live="polite">Inactive</span>
+    </section>
+
+    <footer>
+      <p class="version">v0.1.0</p>
+    </footer>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>
