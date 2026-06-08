@@ -104,26 +104,43 @@
     // Read initial position synchronously if provided, else async-load.
     let currentPosition = (opts && opts.position) || null;
 
-    let widget = null;            // host element (attached to documentElement)
-    let shadow = null;            // closed shadow root
-    let rootEl = null;            // .noais-page-counter inside shadow
-    let dragHandle = null;        // .noais-page-counter-drag-handle
-    let bodyList = null;          // .noais-page-counter-body (expanded list)
-    let countLabel = null;        // .noais-page-counter-count
-    let attachedHost = null;
-    let mounted = false;
-    let isExpanded = false;
-    let dragState = null;
-    const corners = ['bottom-right', 'top-left', 'top-right', 'bottom-left'];
+  let widget = null; // host element (attached to documentElement)
+  let shadow = null; // closed shadow root
+  let rootEl = null; // .noais-page-counter inside shadow
+  let dragHandle = null; // .noais-page-counter-drag-handle
+  let bodyList = null; // .noais-page-counter-body (expanded list)
+  let countLabel = null; // .noais-page-counter-count
+  let attachedHost = null;
+  let mounted = false;
+  let isExpanded = false;
+  let dragState = null;
+  const corners = ['bottom-right', 'top-left', 'top-right', 'bottom-left'];
+  // Capture the document once so event handlers and idempotency checks
+  // always use the same object (even in tests that inject opts.document).
+  const docEl = document;
 
-    // Lazy-load position from storage on first mount.
-    function ensurePositionLoaded(cb) {
-      if (currentPosition) { cb(currentPosition); return; }
-      readPosition(storage, (pos) => {
-        if (pos) currentPosition = pos;
-        cb(currentPosition);
-      });
-    }
+  // Compute a default position synchronously (bottom-right corner).
+  function computeDefaultPosition() {
+    const wv = viewport || { width: 1024, height: 768 };
+    const sz = { w: 110, h: 28 };
+    return cornerPosition('bottom-right', wv.width, wv.height, sz.w, sz.h, 12);
+  }
+
+  // Lazy-load position from storage on first mount.
+  function ensurePositionLoaded(cb) {
+    if (currentPosition) { cb(currentPosition); return; }
+    // Start with the default so the widget is placed immediately.
+    currentPosition = computeDefaultPosition();
+    cb(currentPosition);
+    // Then try to load a saved position asynchronously.
+    readPosition(storage, (pos) => {
+      if (pos) {
+        currentPosition = pos;
+        applyPosition(pos);
+        if (widget) widget._lastPos = { x: pos.x, y: pos.y };
+      }
+    });
+  }
 
     function makeWidget() {
       if (!document || typeof document.createElement !== 'function') return null;
@@ -295,14 +312,14 @@
       if (!event) return;
       try { event.stopPropagation(); } catch (_e) {}
       if (event.preventDefault) { try { event.preventDefault(); } catch (_e) {} }
-      dragState = { startX: event.clientX || 0, startY: event.clientY || 0, moved: false };
-      // Bind on document so the drag survives even if the cursor leaves the
-      // widget. In Node tests we have a fake document; the real browser
-      // hands us the real document via opts.
-      if (document && document.addEventListener) {
-        document.addEventListener('mousemove', onDragMove);
-        document.addEventListener('mouseup', onDragEnd);
-      }
+  dragState = { startX: event.clientX || 0, startY: event.clientY || 0, moved: false };
+  // Bind on the captured document so the drag survives even if the cursor
+  // leaves the widget. Uses docEl (not the closure `document`) so tests
+  // that inject opts.document get the right event target.
+  if (docEl && docEl.addEventListener) {
+    docEl.addEventListener('mousemove', onDragMove);
+    docEl.addEventListener('mouseup', onDragEnd);
+  }
     }
 
     function onDragMove(event) {
@@ -319,12 +336,12 @@
       applyPosition(next);
     }
 
-    function onDragEnd(_event) {
-      if (document && document.removeEventListener) {
-        document.removeEventListener('mousemove', onDragMove);
-        document.removeEventListener('mouseup', onDragEnd);
-      }
-      if (dragState && dragState.moved && currentPosition) {
+function onDragEnd(_event) {
+  if (docEl && docEl.removeEventListener) {
+    docEl.removeEventListener('mousemove', onDragMove);
+    docEl.removeEventListener('mouseup', onDragEnd);
+  }
+  if (dragState && dragState.moved && currentPosition) {
         // Persist to storage.
         try { writePosition(storage, currentPosition); } catch (_e) { /* ignore */ }
       }
@@ -348,25 +365,26 @@
     function mount(hostEl) {
       if (mounted) return; // idempotent (this handle)
       if (!document) return;
-      // Idempotency: if a counter is already mounted on the document
-      // (regardless of which handle mounted it), do nothing.
-      if (typeof document.querySelectorAll === 'function'
-          && document.querySelectorAll('[data-noais-page-counter]').length > 0) {
-        // Record the existing widget on the handle for tests/observers.
-        try {
-          const existing = document.querySelectorAll('[data-noais-page-counter]')[0];
-          if (existing) {
-            widget = existing;
-            shadow = existing._shadow || null;
-            rootEl = (shadow && shadow.querySelector) ? shadow.querySelector('.noais-page-counter') : null;
-            dragHandle = (shadow && shadow.querySelector) ? shadow.querySelector('.noais-page-counter-drag-handle') : null;
-            countLabel = (shadow && shadow.querySelector) ? shadow.querySelector('.noais-page-counter-count') : null;
-            bodyList = (shadow && shadow.querySelector) ? shadow.querySelector('.noais-page-counter-body') : null;
-          }
-        } catch (_e) { /* ignore */ }
-        mounted = true;
-        return;
+  // Idempotency: if a counter is already mounted on the document
+  // (regardless of which handle mounted it), adopt the existing widget.
+  if (typeof docEl.querySelectorAll === 'function'
+      && docEl.querySelectorAll('[data-noais-page-counter]').length > 0) {
+    try {
+      const existing = docEl.querySelectorAll('[data-noais-page-counter]')[0];
+      if (existing) {
+        widget = existing;
+        shadow = existing._shadow || null;
+        // Use docEl.querySelectorAll (not shadow.querySelector) so the
+        // walk works in both real browsers and our test DOM stub.
+        rootEl = docEl.querySelector('.noais-page-counter') || null;
+        dragHandle = docEl.querySelector('.noais-page-counter-drag-handle') || null;
+        countLabel = docEl.querySelector('.noais-page-counter-count') || null;
+        bodyList = docEl.querySelector('.noais-page-counter-body') || null;
       }
+    } catch (_e) { /* ignore */ }
+    mounted = true;
+    return;
+  }
       const host = hostEl || document.documentElement || (document.body || null);
       if (!host || typeof host.appendChild !== 'function') return;
       const w = makeWidget();
@@ -416,13 +434,13 @@
       });
     }
 
-    function unmount() {
-      if (!mounted) return;
-      // Detach event listeners.
-      if (document && document.removeEventListener) {
-        document.removeEventListener('mousemove', onDragMove);
-        document.removeEventListener('mouseup', onDragEnd);
-      }
+function unmount() {
+  if (!mounted) return;
+  // Detach event listeners.
+  if (docEl && docEl.removeEventListener) {
+    docEl.removeEventListener('mousemove', onDragMove);
+    docEl.removeEventListener('mouseup', onDragEnd);
+  }
       if (rootEl && rootEl.removeEventListener) {
         rootEl.removeEventListener('click', onCardClick);
         rootEl.removeEventListener('contextmenu', onContextMenu);
@@ -444,20 +462,14 @@
       isExpanded = false;
     }
 
-    function update(n) {
-      // Allow update(n) to override what getCount() returns for this tick.
-      if (typeof n === 'number') {
-        // Wrap getCount so refresh uses the override for this call.
-        const realGetCount = getCount;
-        const wrapped = function () { return n; };
-        const prev = getCount;
-        // We can't reassign the closure-captured getCount, so we just set
-        // the countLabel text directly.
-        if (countLabel) countLabel.textContent = String(n);
-      }
-      refreshCount();
-      refreshBody();
-    }
+function update(n) {
+  if (typeof n === 'number') {
+    countLabel.textContent = String(n);
+  } else {
+    refreshCount();
+  }
+  refreshBody();
+}
 
     function expand() {
       if (!rootEl || !rootEl.classList) return;

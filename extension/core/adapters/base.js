@@ -6,11 +6,13 @@
 // world, so they touch the DOM directly.
 //
 // Contract:
-//   adapter.id        string, e.g. 'youtube'
-//   adapter.match(hostname) -> boolean
-//   adapter.findElements(root) -> Element[] (live or static, both OK)
-//   adapter.extractText(element) -> string
-//   adapter.decorate(element, score, count) -> void (no innerHTML!)
+// adapter.id string, e.g. 'youtube'
+// adapter.match(hostname) -> boolean
+// adapter.findElements(root) -> Element[] (live or static, both OK)
+// adapter.extractText(element) -> string
+// adapter.decorate(element, score, count, breakdown) -> void (no innerHTML!)
+//   breakdown: optional v1.1 heuristics breakdown object (serialised into
+//   data-noais-breakdown on the badge so the tooltip can display it).
 //
 // All adapters MUST be safe to call repeatedly on the same element; they
 // should check `element.dataset.noaisScored` and no-op if already scored.
@@ -25,36 +27,41 @@
     return 'high';
   }
 
-  // Create a badge DOM element. NEVER uses innerHTML — uses textContent.
-  // Caller appends it; we don't touch the host element.
-  function createBadge(id, score, phraseCount) {
-    const span = document.createElement('span');
-    span.className = 'noais-badge noais-badge-' + severityFromScore(score);
-    span.dataset.noaisBadge = '1';
-    span.setAttribute('role', 'status');
-    span.setAttribute('aria-label', 'NOAIS score ' + score + ' of 100');
-
-    const label = document.createElement('span');
-    label.className = 'noais-badge-label';
-    label.textContent = 'NOAIS';
-    span.appendChild(label);
-
-    const num = document.createElement('span');
-    num.className = 'noais-badge-num';
-    num.textContent = String(score);
-    span.appendChild(num);
-
-    if (phraseCount > 0) {
-      const pc = document.createElement('span');
-      pc.className = 'noais-badge-phrases';
-      pc.textContent = '+' + phraseCount + ' phrase' + (phraseCount === 1 ? '' : 's');
-      span.appendChild(pc);
-    }
-
-    // Carry the adapter id for tests + future debug
-    span.dataset.noaisAdapter = id;
-    return span;
+// Create a badge DOM element. NEVER uses innerHTML — uses textContent.
+// Caller appends it; we don't touch the host element.
+// v1.1 second arg: optional breakdown object. Serialised into data-noais-breakdown.
+function createBadge(id, score, phraseCount, breakdown) {
+  const span = document.createElement('span');
+  span.className = 'noais-badge noais-badge-' + severityFromScore(score);
+  span.dataset.noaisBadge = '1';
+  if (breakdown) {
+    try { span.dataset.noaisBreakdown = JSON.stringify(breakdown); }
+    catch (_e) {}
   }
+  span.setAttribute('role', 'status');
+  span.setAttribute('aria-label', 'NOAIS score ' + score + ' of 100');
+
+  const label = document.createElement('span');
+  label.className = 'noais-badge-label';
+  label.textContent = 'NOAIS';
+  span.appendChild(label);
+
+  const num = document.createElement('span');
+  num.className = 'noais-badge-num';
+  num.textContent = String(score);
+  span.appendChild(num);
+
+  if (phraseCount > 0) {
+    const pc = document.createElement('span');
+    pc.className = 'noais-badge-phrases';
+    pc.textContent = '+' + phraseCount + ' phrase' + (phraseCount === 1 ? '' : 's');
+    span.appendChild(pc);
+  }
+
+  // Carry the adapter id for tests + future debug
+  span.dataset.noaisAdapter = id;
+  return span;
+}
 
   // Apply or update the severity class on the element. Idempotent.
   function applySeverityClass(element, score) {
