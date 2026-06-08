@@ -96,8 +96,8 @@ run_chromium "$TMPDIR1" "$STDERR_LOG1" "file://$REPO/tests/fixtures/test-ai.html
 ID1=$(extract_id "$STDERR_LOG1")
 echo "  ID: $ID1"
 
-assert_log_contains '\[NOAIS content\] v1\.1\.0 loaded' "$STDERR_LOG1" \
-  "v0.7 content script loaded"
+assert_log_contains '\[NOAIS content\] v1\.1\.[0-9]+ loaded' "$STDERR_LOG1" \
+  "v1.1 content script loaded"
 assert_log_contains 'sensitivity: 100' "$STDERR_LOG1" \
   "default sensitivity is 100"
 assert_log_contains 'score=[0-9]+/100' "$STDERR_LOG1" \
@@ -110,7 +110,7 @@ assert_log_not_contains 'Heuristics module not loaded' "$STDERR_LOG1" \
   "heuristics module loaded correctly"
 assert_log_not_contains 'Settings not loaded yet' "$STDERR_LOG1" \
   "settings storage read completed"
-assert_log_contains '\[NOAIS\] v1\.1\.0 installed' "$STDERR_LOG1" \
+assert_log_contains '\[NOAIS\] v1\.1\.[0-9]+ installed' "$STDERR_LOG1" \
   "background service worker fired"
 
 # --- Run 2: verify extension ID is stable (key field is honored) ---
@@ -131,8 +131,8 @@ else
 fi
 
 # --- Run 2: verify v0.3 functionality still works on human text ---
-assert_log_contains '\[NOAIS content\] v1\.1\.0 loaded' "$STDERR_LOG2" \
-  "v0.7 content script loaded on human page"
+assert_log_contains '\[NOAIS content\] v1\.1\.[0-9]+ loaded' "$STDERR_LOG2" \
+  "v1.1 content script loaded on human page"
 assert_log_contains 'sensitivity: 100' "$STDERR_LOG2" \
   "sensitivity reported on human page"
 # Human text: score should be < 30 (zero/green severity)
@@ -148,8 +148,8 @@ echo ""
 echo "--- Run 3 (YouTube adapter on fixture) ---"
 run_chromium "$TMPDIR3" "$STDERR_LOG3" "file://$REPO/tests/fixtures/test-youtube.html"
 echo ""
-assert_log_contains '\[NOAIS content\] v1\.1\.0 loaded' "$STDERR_LOG3" \
-  "v0.7 content script loaded on YouTube fixture"
+assert_log_contains '\[NOAIS content\] v1\.1\.[0-9]+ loaded' "$STDERR_LOG3" \
+  "v1.1 content script loaded on YouTube fixture"
 assert_log_contains 'adapter "youtube" initial scan' "$STDERR_LOG3" \
   "YouTube adapter ran an initial scan"
 # Count the noais badges in the dumped DOM (one per scored comment)
@@ -183,8 +183,8 @@ fi
 echo ""
 echo "--- Run 4 (Facebook adapter on fixture) ---"
 run_chromium "$TMPDIR4" "$STDERR_LOG4" "file://$REPO/tests/fixtures/test-facebook.html"
-assert_log_contains '\[NOAIS content\] v1\.1\.0 loaded' "$STDERR_LOG4" \
-  "v0.7 content script loaded on Facebook fixture"
+assert_log_contains '\[NOAIS content\] v1\.1\.[0-9]+ loaded' "$STDERR_LOG4" \
+  "v1.1 content script loaded on Facebook fixture"
 assert_log_contains 'adapter "facebook" initial scan' "$STDERR_LOG4" \
   "Facebook adapter ran an initial scan"
 # The fixture has 4 + 1 (injected) = 5 articles; the first one ("First post!")
@@ -206,8 +206,8 @@ fi
 echo ""
 echo "--- Run 5 (Instagram adapter on fixture) ---"
 run_chromium "$TMPDIR5" "$STDERR_LOG5" "file://$REPO/tests/fixtures/test-instagram.html"
-assert_log_contains '\[NOAIS content\] v1\.1\.0 loaded' "$STDERR_LOG5" \
-  "v0.7 content script loaded on Instagram fixture"
+assert_log_contains '\[NOAIS content\] v1\.1\.[0-9]+ loaded' "$STDERR_LOG5" \
+  "v1.1 content script loaded on Instagram fixture"
 assert_log_contains 'adapter "instagram" initial scan' "$STDERR_LOG5" \
   "Instagram adapter ran an initial scan"
 # Fixture has 5 articles (4 static + 1 injected). The first one is too short (< 30 chars).
@@ -228,8 +228,8 @@ fi
 echo ""
 echo "--- Run 6 (TikTok adapter on fixture) ---"
 run_chromium "$TMPDIR6" "$STDERR_LOG6" "file://$REPO/tests/fixtures/test-tiktok.html"
-assert_log_contains '\[NOAIS content\] v1\.1\.0 loaded' "$STDERR_LOG6" \
-  "v0.7 content script loaded on TikTok fixture"
+assert_log_contains '\[NOAIS content\] v1\.1\.[0-9]+ loaded' "$STDERR_LOG6" \
+  "v1.1 content script loaded on TikTok fixture"
 assert_log_contains 'adapter "tiktok" initial scan' "$STDERR_LOG6" \
   "TikTok adapter ran an initial scan"
 # Fixture has 5 comments (1 too short, 1 too short, 1 qualifies, 1 AI qualifies, 1 fallback qualifies)
@@ -309,7 +309,7 @@ fi
 echo ""
 echo "--- Run 9 (page counter fixture, v1.1) ---"
 run_chromium "$TMPDIR9" "$STDERR_LOG9" "file://$REPO/tests/fixtures/test-page-counter.html"
-assert_log_contains '\[NOAIS content\] v1\.1\.0 loaded' "$STDERR_LOG9" \
+assert_log_contains '\[NOAIS content\] v1\.1\.[0-9]+ loaded' "$STDERR_LOG9" \
   "content script loaded on page-counter fixture"
 if grep -qE 'noais-page-counter' "$STDOUT_LOG"; then
   ok "page counter widget markup is in the DOM"
@@ -336,7 +336,7 @@ fi
 echo ""
 echo "--- Run 10 (element-allowlist fixture, v1.1) ---"
 run_chromium "$TMPDIR10" "$STDERR_LOG10" "file://$REPO/tests/fixtures/test-element-allowlist.html"
-assert_log_contains '\[NOAIS content\] v1\.1\.0 loaded' "$STDERR_LOG10" \
+assert_log_contains '\[NOAIS content\] v1\.1\.[0-9]+ loaded' "$STDERR_LOG10" \
   "content script loaded on element-allowlist fixture"
 assert_log_contains 'NOAIS_ELEMENT_ALLOWLIST module ready' "$STDERR_LOG10" \
   "element-allowlist module loaded and self-identifies (IIFE readiness log)"
