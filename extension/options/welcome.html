@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>__MSG_welcome_title__</title>
+  <link rel="stylesheet" href="welcome.css">
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1 class="title" id="welcome-title">…</h1>
+      <p class="subtitle">No Artificial Intelligence Slop</p>
+    </header>
+
+    <section class="card card-what" aria-labelledby="card-what-title">
+      <div class="card-emoji" aria-hidden="true">🤖</div>
+      <h2 class="card-title" id="card-what-title">What NOAIS does</h2>
+      <p class="card-body">
+        NOAIS scans every web page on-device for AI-generated text and shows you
+        a colour-coded score. No network calls, no telemetry, no accounts —
+        everything runs in your browser. Works on YouTube, Facebook, Instagram,
+        TikTok, and any other site.
+      </p>
+    </section>
+
+    <section class="card card-mode" aria-labelledby="card-mode-title">
+      <div class="card-emoji" aria-hidden="true">🎚️</div>
+      <h2 class="card-title" id="card-mode-title">Pick your mode</h2>
+      <p class="card-body">
+        <strong>Soft mode</strong> (default) adds a small badge next to suspected
+        AI content so you stay in control. <strong>Hard mode</strong> dims and
+        blurs the content so you can scroll past without reading it. You can flip
+        between modes per-site from the Settings page.
+      </p>
+    </section>
+
+    <section class="card card-tour" aria-labelledby="card-tour-title">
+      <div class="card-emoji" aria-hidden="true">🧭</div>
+      <h2 class="card-title" id="card-tour-title">Tour the UI</h2>
+      <p class="card-body">
+        Click the NOAIS icon in your toolbar to see the score for the current
+        page. The Settings page lets you adjust the sensitivity slider, toggle
+        sites on or off, and manage allowlisted elements.
+      </p>
+      <button type="button" id="take-tour" class="secondary-button">Take the tour</button>
+    </section>
+
+    <section class="card card-privacy" aria-labelledby="card-privacy-title">
+      <div class="card-emoji" aria-hidden="true">🔒</div>
+      <h2 class="card-title" id="card-privacy-title">Privacy promise</h2>
+      <p class="card-body">
+        NOAIS makes <strong>zero network calls</strong>. It never sends the
+        text of pages you visit anywhere. The only data stored is your
+        settings, in your browser's local storage. See
+        <a href="https://github.com/nedaktov-ops/NOAIS/blob/main/PRIVACY.md"
+           id="privacy-link" target="_blank" rel="noopener">PRIVACY.md</a>
+        for the full disclosure.
+      </p>
+    </section>
+
+    <footer>
+      <button type="button" id="get-started" class="primary-button">Get started</button>
+    </footer>
+  </main>
+  <script src="welcome.js"></script>
+</body>
+</html>

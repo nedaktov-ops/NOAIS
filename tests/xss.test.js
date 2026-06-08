@@ -151,4 +151,76 @@ tests.push({
   },
 });
 
+tests.push({
+  name: 'XSS: v1.1 sync-helper.js is innerHTML-free',
+  fn: () => {
+    const file = path.join(__dirname, '..', 'extension', 'core', 'sync-helper.js');
+    if (!fs.existsSync(file)) {
+      throw new Error('core/sync-helper.js not found');
+    }
+    const src = fs.readFileSync(file, 'utf8');
+    const codeOnly = src
+      .split('\n')
+      .map((line) => line.replace(/\/\/.*$/, ''))
+      .join('\n')
+      .replace(/(['"`])(?:(?=(\\?))\2.)*?\1/g, '""');
+    const matches = codeOnly.match(/\.innerHTML\s*=/g) || [];
+    assert.strictEqual(matches.length, 0, 'sync-helper.js must not use .innerHTML');
+  },
+});
+
+tests.push({
+  name: 'XSS: v1.1 sidepanel/why.js is innerHTML-free',
+  fn: () => {
+    const file = path.join(__dirname, '..', 'extension', 'sidepanel', 'why.js');
+    if (!fs.existsSync(file)) {
+      throw new Error('sidepanel/why.js not found');
+    }
+    const src = fs.readFileSync(file, 'utf8');
+    const codeOnly = src
+      .split('\n')
+      .map((line) => line.replace(/\/\/.*$/, ''))
+      .join('\n')
+      .replace(/(['"`])(?:(?=(\\?))\2.)*?\1/g, '""');
+    const matches = codeOnly.match(/\.innerHTML\s*=/g) || [];
+    assert.strictEqual(matches.length, 0, 'why.js must not use .innerHTML');
+  },
+});
+
+tests.push({
+  name: 'XSS: v1.1 options/welcome.js is innerHTML-free',
+  fn: () => {
+    const file = path.join(__dirname, '..', 'extension', 'options', 'welcome.js');
+    if (!fs.existsSync(file)) {
+      throw new Error('options/welcome.js not found');
+    }
+    const src = fs.readFileSync(file, 'utf8');
+    const codeOnly = src
+      .split('\n')
+      .map((line) => line.replace(/\/\/.*$/, ''))
+      .join('\n')
+      .replace(/(['"`])(?:(?=(\\?))\2.)*?\1/g, '""');
+    const matches = codeOnly.match(/\.innerHTML\s*=/g) || [];
+    assert.strictEqual(matches.length, 0, 'welcome.js must not use .innerHTML');
+  },
+});
+
+tests.push({
+  name: 'XSS: v1.1 keyboard-shortcut.js (background) is innerHTML-free',
+  fn: () => {
+    const file = path.join(__dirname, '..', 'extension', 'background', 'keyboard-shortcut.js');
+    if (!fs.existsSync(file)) {
+      throw new Error('background/keyboard-shortcut.js not found');
+    }
+    const src = fs.readFileSync(file, 'utf8');
+    const codeOnly = src
+      .split('\n')
+      .map((line) => line.replace(/\/\/.*$/, ''))
+      .join('\n')
+      .replace(/(['"`])(?:(?=(\\?))\2.)*?\1/g, '""');
+    const matches = codeOnly.match(/\.innerHTML\s*=/g) || [];
+    assert.strictEqual(matches.length, 0, 'keyboard-shortcut.js must not use .innerHTML');
+  },
+});
+
 module.exports = tests;

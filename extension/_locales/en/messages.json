@@ -1,0 +1,320 @@
+{
+  "extension_name": {
+    "message": "NOAIS",
+    "description": "Name of the extension shown in the toolbar tooltip and in chrome://extensions."
+  },
+  "extension_description": {
+    "message": "NOAIS (No Artificial Intelligence Slop) - detect, mask, and disable AI-generated content on the web.",
+    "description": "Long description shown on the extension's store listing."
+  },
+  "popup_title": {
+    "message": "NOAIS",
+    "description": "Heading at the top of the popup."
+  },
+  "popup_subtitle": {
+    "message": "No Artificial Intelligence Slop",
+    "description": "Subheading at the top of the popup."
+  },
+  "popup_master_toggle_on": {
+    "message": "Active",
+    "description": "Status label when the master toggle is on."
+  },
+  "popup_master_toggle_off": {
+    "message": "Inactive",
+    "description": "Status label when the master toggle is off."
+  },
+  "popup_score_label": {
+    "message": "AI-likely score",
+    "description": "Label above the score readout in the popup."
+  },
+  "popup_phrases_label": {
+    "message": "Hard-coded AI phrases",
+    "description": "Label above the AI phrase count in the popup."
+  },
+  "popup_site_label": {
+    "message": "On this site",
+    "description": "Label above the per-site toggle in the popup."
+  },
+  "popup_tab_label": {
+    "message": "On this tab",
+    "description": "Label above the per-tab toggle in the popup (v1.1)."
+  },
+  "popup_stats_label": {
+    "message": "On this page",
+    "description": "Label above the per-page stats section in the popup (v1.1)."
+  },
+  "popup_stats_scanned": {
+    "message": "elements scanned",
+    "description": "Suffix shown after the scanned-element count in the popup stats section."
+  },
+  "popup_stats_likely": {
+    "message": "likely AI",
+    "description": "Suffix shown after the likely-AI count in the popup stats section."
+  },
+  "popup_stats_high": {
+    "message": "very high",
+    "description": "Suffix shown after the very-high count in the popup stats section."
+  },
+  "popup_why_link": {
+    "message": "Why am I seeing this?",
+    "description": "Footer link in the popup that opens the side panel with the score breakdown."
+  },
+  "popup_open_settings": {
+    "message": "Open Settings",
+    "description": "Footer link in the popup that opens the full options page."
+  },
+  "popup_active": {
+    "message": "Active",
+    "description": "Status text in the popup when NOAIS is enabled (v1.1)."
+  },
+  "popup_inactive": {
+    "message": "Inactive",
+    "description": "Status text in the popup when NOAIS is disabled (v1.1)."
+  },
+  "popup_active_aria": {
+    "message": "NOAIS is active",
+    "description": "aria-label for the active status (v1.1)."
+  },
+  "popup_inactive_aria": {
+    "message": "NOAIS is inactive",
+    "description": "aria-label for the inactive status (v1.1)."
+  },
+  "popup_toggle_site": {
+    "message": "Disable on this site",
+    "description": "Per-site disable button shown in the popup when the current site is one of the curated platforms (v1.1)."
+  },
+  "popup_enable_site": {
+    "message": "Enable on this site",
+    "description": "Per-site enable button shown in the popup when the current site is currently disabled (v1.1)."
+  },
+  "popup_settings_link": {
+    "message": "Settings",
+    "description": "Footer link in the popup that opens the full options page (v1.1, replaces popup_open_settings for the inline link)."
+  },
+  "popup_words_analysed": {
+    "message": "words analysed",
+    "description": "Suffix shown after the word count (v1.1)."
+  },
+  "options_title": {
+    "message": "NOAIS Settings",
+    "description": "Heading at the top of the options page."
+  },
+  "options_subtitle": {
+    "message": "No Artificial Intelligence Slop",
+    "description": "Subheading at the top of the options page."
+  },
+  "options_sensitivity_card_title": {
+    "message": "Sensitivity",
+    "description": "Title of the sensitivity card on the options page."
+  },
+  "options_sensitivity_help": {
+    "message": "Scales the AI-likely score on every page. Default (100) shows raw scores. Move left to be more lenient, right to be stricter.",
+    "description": "Helper text under the sensitivity card title."
+  },
+  "options_sites_card_title": {
+    "message": "Per-site settings",
+    "description": "Title of the per-site card on the options page."
+  },
+  "options_sites_help": {
+    "message": "NOAIS scans every page by default. Turn it off for sites where you don't want detection.",
+    "description": "Helper text under the per-site card title."
+  },
+  "options_allowlist_card_title": {
+    "message": "Allowlisted elements",
+    "description": "Title of the per-element allowlist card on the options page (v1.1)."
+  },
+  "options_allowlist_help": {
+    "message": "Elements you have asked NOAIS to leave alone. Click Remove to start scoring them again.",
+    "description": "Helper text under the allowlist card title."
+  },
+  "options_add_site_placeholder": {
+    "message": "example.com",
+    "description": "Placeholder text for the add-custom-site input."
+  },
+  "options_add_site_button": {
+    "message": "Add",
+    "description": "Label of the add-custom-site button."
+  },
+  "options_allowlist_empty": {
+    "message": "No allowlisted elements yet.",
+    "description": "Empty-state message shown when the per-element allowlist contains no entries."
+  },
+  "options_allowlist_remove": {
+    "message": "Remove",
+    "description": "Label of the per-element allowlist Remove button."
+  },
+  "options_sync_indicator_on": {
+    "message": "Settings sync across devices via your browser.",
+    "description": "Banner shown when chrome.storage.sync is available."
+  },
+  "options_sync_indicator_off": {
+    "message": "Settings will not sync across devices (sync unavailable).",
+    "description": "Banner shown when chrome.storage.sync is unavailable."
+  },
+  "options_band_off": {
+    "message": "Off",
+    "description": "Label shown next to the sensitivity slider when sensitivity is 0-9 (v1.1)."
+  },
+  "options_band_lenient": {
+    "message": "Lenient",
+    "description": "Label shown next to the sensitivity slider when sensitivity is 10-49 (v1.1)."
+  },
+  "options_band_default": {
+    "message": "Default",
+    "description": "Label shown next to the sensitivity slider when sensitivity is 50-89 (v1.1)."
+  },
+  "options_band_strict": {
+    "message": "Strict",
+    "description": "Label shown next to the sensitivity slider when sensitivity is 90-100 (v1.1)."
+  },
+  "options_badge_curated": {
+    "message": "Curated",
+    "description": "Badge on a site-list row for one of the 7 curated platforms (v1.1)."
+  },
+  "options_badge_custom": {
+    "message": "Custom",
+    "description": "Badge on a site-list row for a user-added custom site (v1.1)."
+  },
+  "options_hard_mode_card_title": {
+    "message": "Hard-mode sites",
+    "description": "Title of the hard-mode sites card on the options page (v1.1)."
+  },
+  "options_hard_mode_help": {
+    "message": "On these sites, NOAIS dims and blurs suspected AI content instead of just adding a badge. Use the Settings page on a per-site basis to add or remove entries.",
+    "description": "Helper text under the hard-mode card title."
+  },
+  "options_hard_mode_empty": {
+    "message": "No hard-mode sites yet. Add one from the settings card above by checking 'Hard mode' for the site.",
+    "description": "Empty-state message shown when the hard-mode list is empty (v1.1)."
+  },
+  "options_hard_mode_remove": {
+    "message": "Remove",
+    "description": "Label of the per-site hard-mode Remove button (v1.1)."
+  },
+  "options_saved": {
+    "message": "Saved ✓",
+    "description": "Toast shown when a setting has been persisted (v1.1)."
+  },
+  "options_close_link": {
+    "message": "Close this tab",
+    "description": "Footer link that closes the options tab (v1.1)."
+  },
+  "welcome_title": {
+    "message": "Welcome to NOAIS",
+    "description": "Heading at the top of the welcome page (v1.1)."
+  },
+  "welcome_get_started": {
+    "message": "Get started",
+    "description": "Primary button on the welcome page that opens the options."
+  },
+  "welcome_take_tour": {
+    "message": "Take the tour",
+    "description": "Secondary button on the welcome page that walks the user through the UI."
+  },
+  "sidepanel_title": {
+    "message": "Why am I seeing this?",
+    "description": "Heading at the top of the why side panel (v1.1)."
+  },
+  "sidepanel_score_label": {
+    "message": "Score",
+    "description": "Label above the score readout in the side panel."
+  },
+  "sidepanel_metrics_label": {
+    "message": "Heuristic metrics",
+    "description": "Label above the per-metric breakdown in the side panel."
+  },
+  "sidepanel_phrases_label": {
+    "message": "Hard-coded phrases",
+    "description": "Label above the matched-phrases list in the side panel."
+  },
+  "sidepanel_allowlist_button": {
+    "message": "Don't show this again",
+    "description": "Button in the side panel that adds the element to the per-element allowlist."
+  },
+  "sidepanel_report_link": {
+    "message": "Report a false positive",
+    "description": "Footer link in the side panel that opens a GitHub issue template."
+  },
+  "cmd_toggle_site": {
+    "message": "Toggle NOAIS for the current site",
+    "description": "Description of the Ctrl+Shift+A keyboard shortcut shown in chrome://extensions/shortcuts."
+  },
+  "page_counter_badge": {
+    "message": "NOAIS · $count$",
+    "description": "Text shown on the page-counter widget (v1.1). $count$ is replaced with the per-page detection count.",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "12"
+      }
+    }
+  },
+  "tooltip_why": {
+    "message": "Why am I seeing this?",
+    "description": "Link in the badge tooltip that opens the side panel."
+  },
+  "tooltip_dont_show": {
+    "message": "Don't show this",
+    "description": "Link in the badge tooltip that adds the element to the per-element allowlist."
+  },
+  "why_panel_title": {
+    "message": "Why NOAIS scored this page",
+    "description": "Title of the side panel that explains the per-page AI score."
+  },
+  "why_panel_subtitle": {
+    "message": "A breakdown of how NOAIS reached its verdict",
+    "description": "Subtitle of the side panel."
+  },
+  "why_panel_score": {
+    "message": "Score",
+    "description": "Heading for the score region of the side panel."
+  },
+  "why_panel_score_high": {
+    "message": "Likely AI-generated",
+    "description": "Score label when the AI score is 70 or above."
+  },
+  "why_panel_score_mid": {
+    "message": "Possibly AI-generated",
+    "description": "Score label when the AI score is 40-69."
+  },
+  "why_panel_score_low": {
+    "message": "Likely human-written",
+    "description": "Score label when the AI score is 1-39."
+  },
+  "why_panel_waiting": {
+    "message": "Waiting for page analysis…",
+    "description": "Default label shown in the score region before any analysis has been broadcast."
+  },
+  "why_panel_breakdown": {
+    "message": "Breakdown",
+    "description": "Heading for the per-signal breakdown of the score."
+  },
+  "why_panel_breakdown_vocab": {
+    "message": "Vocabulary entropy",
+    "description": "Label for the vocabulary entropy row in the breakdown."
+  },
+  "why_panel_breakdown_perplexity": {
+    "message": "Perplexity",
+    "description": "Label for the perplexity row in the breakdown."
+  },
+  "why_panel_breakdown_burstiness": {
+    "message": "Burstiness",
+    "description": "Label for the burstiness row in the breakdown."
+  },
+  "why_panel_explain": {
+    "message": "How the score is calculated",
+    "description": "Heading for the explainer section in the side panel."
+  },
+  "why_panel_explain_body": {
+    "message": "NOAIS analyses every text node on the page and combines three signals — vocabulary entropy, perplexity, and burstiness — into a single 0-100 score. Higher means more likely to be AI-generated. Everything runs locally in your browser; no text ever leaves your device.",
+    "description": "Body of the explainer section."
+  },
+  "why_panel_privacy": {
+    "message": "Your privacy",
+    "description": "Heading for the privacy section in the side panel."
+  },
+  "why_panel_privacy_body": {
+    "message": "NOAIS never makes a network call. The score, the breakdown, and your settings stay on this device. To learn more, see the PRIVACY.md document shipped with the extension.",
+    "description": "Body of the privacy section."
+  }
+}

@@ -1,0 +1,171 @@
+/* NOAIS welcome page styles - v1.1.0
+ * Self-contained light + dark mode. Same colour palette and design
+ * vocabulary as popup.css + options.css.
+ */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: #f9fafb;
+  color: #111827;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 48px 24px 64px 24px;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.title {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #4F46E5;
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  letter-spacing: 0.3px;
+}
+
+.card {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 18px;
+  align-items: start;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 22px 28px;
+  margin-bottom: 18px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.card-emoji {
+  font-size: 36px;
+  line-height: 1;
+  user-select: none;
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.card-body {
+  font-size: 14px;
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+.card-body a {
+  color: #4F46E5;
+  text-decoration: underline;
+}
+
+.secondary-button {
+  margin-top: 14px;
+  background: transparent;
+  border: 1px solid #4F46E5;
+  color: #4F46E5;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.secondary-button:hover {
+  background: #eef2ff;
+}
+
+.secondary-button:focus-visible {
+  outline: 2px solid #4F46E5;
+  outline-offset: 2px;
+}
+
+footer {
+  text-align: center;
+  margin-top: 36px;
+}
+
+.primary-button {
+  background: #4F46E5;
+  color: #ffffff;
+  border: none;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  padding: 14px 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  box-shadow: 0 1px 3px rgba(79, 70, 229, 0.3);
+}
+
+.primary-button:hover {
+  background: #4338ca;
+}
+
+.primary-button:focus-visible {
+  outline: 2px solid #4F46E5;
+  outline-offset: 3px;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #1f2937;
+    color: #f9fafb;
+  }
+
+  .card {
+    background: #374151;
+    border-color: #4b5563;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  .card-title {
+    color: #f9fafb;
+  }
+
+  .card-body {
+    color: #d1d5db;
+  }
+
+  .card-body a {
+    color: #a5b4fc;
+  }
+
+  .secondary-button {
+    border-color: #a5b4fc;
+    color: #a5b4fc;
+  }
+
+  .secondary-button:hover {
+    background: #312e81;
+  }
+
+  .subtitle {
+    color: #9ca3af;
+  }
+}

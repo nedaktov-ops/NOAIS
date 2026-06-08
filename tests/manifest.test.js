@@ -16,9 +16,9 @@ const MANIFEST = JSON.parse(
 const tests = [];
 
 tests.push({
-  name: 'manifest: version is 0.4.0',
+  name: 'manifest: version is 1.1.0',
   fn: () => {
-    assert.strictEqual(MANIFEST.version, '1.0.0');
+    assert.strictEqual(MANIFEST.version, '1.1.0');
   },
 });
 
@@ -102,11 +102,76 @@ tests.push({
 });
 
 tests.push({
-  name: 'manifest: permissions include storage, activeTab, and tabs (v1.1)',
+  name: 'manifest: permissions include storage, activeTab, tabs, and sidePanel (v1.1)',
   fn: () => {
     assert.ok(MANIFEST.permissions.includes('storage'));
     assert.ok(MANIFEST.permissions.includes('activeTab'));
     assert.ok(MANIFEST.permissions.includes('tabs'), 'tabs permission is required for chrome.tabs.onRemoved per-tab override cleanup (v1.1)');
+    assert.ok(MANIFEST.permissions.includes('sidePanel'), 'sidePanel permission is required for the Why side panel (v1.1)');
+  }
+});
+
+tests.push({
+  name: 'manifest: default_locale is en (v1.1)',
+  fn: () => {
+    assert.strictEqual(MANIFEST.default_locale, 'en');
+  }
+});
+
+tests.push({
+  name: 'manifest: side_panel.default_path points to sidepanel/why.html (v1.1)',
+  fn: () => {
+    assert.ok(MANIFEST.side_panel, 'side_panel is missing');
+    assert.strictEqual(MANIFEST.side_panel.default_path, 'sidepanel/why.html');
+  }
+});
+
+tests.push({
+  name: 'manifest: commands.noais-toggle-site is Ctrl+Shift+A with i18n description (v1.1)',
+  fn: () => {
+    assert.ok(MANIFEST.commands, 'commands block is missing');
+    const cmd = MANIFEST.commands['noais-toggle-site'];
+    assert.ok(cmd, 'noais-toggle-site command is missing');
+    assert.strictEqual(cmd.suggested_key.default, 'Ctrl+Shift+A');
+    assert.strictEqual(cmd.description, '__MSG_cmd_toggle_site__');
+  }
+});
+
+tests.push({
+  name: 'manifest: web_accessible_resources covers welcome + why + options + locales (v1.1)',
+  fn: () => {
+    assert.ok(Array.isArray(MANIFEST.web_accessible_resources), 'web_accessible_resources is missing');
+    assert.ok(MANIFEST.web_accessible_resources.length >= 1, 'at least one entry');
+    const flat = [];
+    for (const entry of MANIFEST.web_accessible_resources) {
+      assert.ok(Array.isArray(entry.resources), 'each entry needs a resources array');
+      assert.ok(Array.isArray(entry.matches), 'each entry needs a matches array');
+      flat.push(...entry.resources);
+    }
+    assert.ok(flat.includes('options/welcome.html'), 'welcome.html must be in WAR');
+    assert.ok(flat.includes('sidepanel/why.html'), 'why.html must be in WAR');
+    assert.ok(flat.includes('options/options.html'), 'options.html must be in WAR');
+  }
+});
+
+tests.push({
+  name: 'manifest: name and description use __MSG_ placeholders (v1.1)',
+  fn: () => {
+    assert.match(MANIFEST.name, /__MSG_[a-z0-9_]+__/);
+    assert.match(MANIFEST.description, /__MSG_[a-z0-9_]+__/);
+  }
+});
+
+tests.push({
+  name: 'manifest: content_scripts includes core/sync-helper.js before settings.js (v1.1)',
+  fn: () => {
+    const js = MANIFEST.content_scripts[0].js;
+    const skIdx = js.indexOf('core/storage-keys.js');
+    const syncIdx = js.indexOf('core/sync-helper.js');
+    const sIdx = js.indexOf('core/settings.js');
+    assert.ok(syncIdx >= 0, 'sync-helper.js not in content_scripts');
+    assert.ok(skIdx < syncIdx, 'storage-keys.js must load before sync-helper.js');
+    assert.ok(syncIdx < sIdx, 'sync-helper.js must load before settings.js');
   }
 });
 

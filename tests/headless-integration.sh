@@ -13,6 +13,8 @@ TMPDIR3="$(mktemp -d)"
 TMPDIR4="$(mktemp -d)"
 TMPDIR5="$(mktemp -d)"
 TMPDIR6="$(mktemp -d)"
+TMPDIR7="$(mktemp -d)"
+TMPDIR8="$(mktemp -d)"
 STDOUT_LOG="$(mktemp)"
 STDERR_LOG1="$(mktemp)"
 STDERR_LOG2="$(mktemp)"
@@ -20,12 +22,16 @@ STDERR_LOG3="$(mktemp)"
 STDERR_LOG4="$(mktemp)"
 STDERR_LOG5="$(mktemp)"
 STDERR_LOG6="$(mktemp)"
+STDERR_LOG7="$(mktemp)"
+STDERR_LOG8="$(mktemp)"
 PASS=0
 FAIL=0
 
 cleanup() {
-  rm -rf "$TMPDIR1" "$TMPDIR2" "$TMPDIR3" "$TMPDIR4" "$TMPDIR5" "$TMPDIR6" "$STDOUT_LOG" \
-         "$STDERR_LOG1" "$STDERR_LOG2" "$STDERR_LOG3" "$STDERR_LOG4" "$STDERR_LOG5" "$STDERR_LOG6"
+  rm -rf "$TMPDIR1" "$TMPDIR2" "$TMPDIR3" "$TMPDIR4" "$TMPDIR5" "$TMPDIR6" \
+         "$TMPDIR7" "$TMPDIR8" "$STDOUT_LOG" \
+         "$STDERR_LOG1" "$STDERR_LOG2" "$STDERR_LOG3" "$STDERR_LOG4" "$STDERR_LOG5" "$STDERR_LOG6" \
+         "$STDERR_LOG7" "$STDERR_LOG8"
 }
 trap cleanup EXIT
 
@@ -100,7 +106,7 @@ assert_log_not_contains 'Heuristics module not loaded' "$STDERR_LOG1" \
   "heuristics module loaded correctly"
 assert_log_not_contains 'Settings not loaded yet' "$STDERR_LOG1" \
   "settings storage read completed"
-assert_log_contains '\[NOAIS\] v0\.1\.0 installed' "$STDERR_LOG1" \
+assert_log_contains '\[NOAIS\] v1\.1\.0 installed' "$STDERR_LOG1" \
   "background service worker fired"
 
 # --- Run 2: verify extension ID is stable (key field is honored) ---
@@ -236,9 +242,68 @@ else
   ko "TT severity class" "no low/high severity element found in DOM"
 fi
 
+# --- Run 7 (v1.1 welcome page) ---
+echo ""
+echo "--- Run 7 (welcome page) ---"
+run_chromium "$TMPDIR7" "$STDERR_LOG7" "file://$REPO/tests/fixtures/test-welcome.html"
+# The 4 cards are visible in the DOM (data-card attribute matches each card).
+WELCOME_CARDS=$(grep -oE 'data-card="[a-z]+"' "$STDOUT_LOG" | sort -u | wc -l)
+if [ "$WELCOME_CARDS" -ge 4 ]; then
+  ok "all 4 welcome cards present in DOM ($WELCOME_CARDS found)"
+else
+  ko "welcome cards" "expected >= 4, got $WELCOME_CARDS"
+fi
+if grep -q 'id="get-started"' "$STDOUT_LOG"; then
+  ok "welcome page has the Get started button"
+else
+  ko "get-started button" "id='get-started' not in DOM"
+fi
+if grep -q 'id="take-tour"' "$STDOUT_LOG"; then
+  ok "welcome page has the Take the tour button"
+else
+  ko "take-tour button" "id='take-tour' not in DOM"
+fi
+# Manifest advertises the welcome page in web_accessible_resources.
+if jq -e '[.web_accessible_resources[].resources[]] | index("options/welcome.html")' "$EXT/manifest.json" >/dev/null; then
+  ok "manifest web_accessible_resources includes options/welcome.html"
+else
+  ko "manifest WAR welcome" "options/welcome.html missing from web_accessible_resources"
+fi
+
+# --- Run 8 (v1.1 sidepanel fallback via new-tab) ---
+echo ""
+echo "--- Run 8 (sidepanel/why.html in a new tab) ---"
+run_chromium "$TMPDIR8" "$STDERR_LOG8" "file://$REPO/tests/fixtures/test-why-panel.html"
+# Score region is in the DOM.
+if grep -q 'id="score-value"' "$STDOUT_LOG"; then
+  ok "why panel renders a score region"
+else
+  ko "why score region" "id='score-value' not in DOM"
+fi
+# All 3 breakdown rows are in the DOM.
+BREAKDOWN_ROWS=$(grep -oE 'data-kind="[a-z]+"' "$STDOUT_LOG" | sort -u | wc -l)
+if [ "$BREAKDOWN_ROWS" -ge 3 ]; then
+  ok "all 3 breakdown rows present (vocab + perplexity + burstiness)"
+else
+  ko "why breakdown rows" "expected >= 3, got $BREAKDOWN_ROWS"
+fi
+# Manifest side_panel.default_path points to the right place.
+SIDE_PANEL_PATH=$(jq -r '.side_panel.default_path // ""' "$EXT/manifest.json")
+if [ "$SIDE_PANEL_PATH" = "sidepanel/why.html" ]; then
+  ok "manifest side_panel.default_path is sidepanel/why.html"
+else
+  ko "manifest side_panel" "expected sidepanel/why.html, got '$SIDE_PANEL_PATH'"
+fi
+# Manifest has the sidePanel permission.
+if jq -e '.permissions | index("sidePanel")' "$EXT/manifest.json" >/dev/null; then
+  ok "manifest permissions includes sidePanel"
+else
+  ko "manifest sidePanel perm" "sidePanel permission missing"
+fi
+
 # --- Manifest sanity ---
 VER=$(jq -r '.version' "$EXT/manifest.json")
-[ "$VER" = "1.0.0" ] && ok "manifest version is 1.0.0" || ko "version" "expected 1.0.0, got $VER"
+[ "$VER" = "1.1.0" ] && ok "manifest version is 1.1.0" || ko "version" "expected 1.1.0, got $VER"
 # v0.5+v0.6+v0.7: manifest must include adapters in content_scripts
 if jq -e '.content_scripts[0].css | index("styles/adapters.css")' "$EXT/manifest.json" >/dev/null; then
   ok "manifest content_scripts.css includes styles/adapters.css"
@@ -274,6 +339,12 @@ if [ $FAIL -gt 0 ]; then
   echo ""
   echo "  Run 6 stderr (last 20 lines):"
   tail -20 "$STDERR_LOG6" | sed 's/^/    /'
+  echo ""
+  echo "  Run 7 stderr (last 20 lines):"
+  tail -20 "$STDERR_LOG7" | sed 's/^/    /'
+  echo ""
+  echo "  Run 8 stderr (last 20 lines):"
+  tail -20 "$STDERR_LOG8" | sed 's/^/    /'
   exit 1
 fi
 exit 0

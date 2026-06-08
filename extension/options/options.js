@@ -1,7 +1,10 @@
-// NOAIS options page script - v0.4.0
-// Renders the curated + custom site list, the sensitivity slider, and
-// the "add custom site" form. Auto-saves on every change. Listens for
-// storage changes from other tabs to stay in sync.
+// NOAIS options page script - v1.1.0
+// Renders the curated + custom site list, the sensitivity slider, the
+// hard-mode sites list (v1.1), and the "add custom site" form. Auto-saves
+// on every change. Listens for storage changes from other tabs to stay in
+// sync. The sync indicator at the top of the page reports whether the
+// small set of sync keys (noais_enabled, noais_global_sensitivity,
+// noais_hard_mode_sites) is actually syncing across devices.
 //
 // Security: every user-controllable string (hostname, error message) is
 // rendered with textContent (or setAttribute), NEVER innerHTML. This is
@@ -17,14 +20,16 @@
   const sensitivityMetaEl = document.getElementById('sensitivity-meta');
   const savedToastEl = document.getElementById('saved-toast');
   const siteListEl = document.getElementById('site-list');
+  const hardModeListEl = document.getElementById('hard-mode-list');
   const addInputEl = document.getElementById('add-site-input');
   const addButtonEl = document.getElementById('add-site-button');
   const addErrorEl = document.getElementById('add-site-error');
   const closeLinkEl = document.getElementById('close-link');
+  const syncStatusEl = document.getElementById('sync-status');
 
   if (
     !sensitivityEl || !sensitivityValueEl || !sensitivityMetaEl ||
-    !savedToastEl || !siteListEl || !addInputEl ||
+    !savedToastEl || !siteListEl || !hardModeListEl || !addInputEl ||
     !addButtonEl || !addErrorEl || !closeLinkEl
   ) {
     console.error('NOAIS options: required DOM elements not found.');
@@ -41,11 +46,17 @@
   }
   const settings = window.NOAIS_SETTINGS;
 
+  // sync-helper: routes reads/writes to chrome.storage.sync for the 3 sync keys
+  // (noais_enabled, noais_global_sensitivity, noais_hard_mode_sites) and to
+  // chrome.storage.local for everything else.
+  const sync = window.NOAIS_SYNC || null;
+
   // ----- Storage keys ----------------------------------------------------
 
   const STORAGE_KEYS = {
     SENSITIVITY: 'noais_global_sensitivity',
     OVERRIDES: 'noais_site_overrides',
+    HARD_MODE_SITES: 'noais_hard_mode_sites',
   };
 
   // ----- State -----------------------------------------------------------
@@ -53,14 +64,27 @@
   // Cached storage state. Refreshed on load and on storage.onChanged.
   let currentSensitivity = 100;
   let currentOverrides = {}; // hostname -> boolean
+  let currentHardModeSites = []; // array of hostnames
+
+  // ----- Localisation ----------------------------------------------------
+
+  function t(key) {
+    try {
+      if (chrome && chrome.i18n && typeof chrome.i18n.getMessage === 'function') {
+        const v = chrome.i18n.getMessage(key);
+        if (v) return v;
+      }
+    } catch (_e) { /* ignore */ }
+    return key;
+  }
 
   // ----- Sensitivity band labels ----------------------------------------
 
   function bandForSensitivity(s) {
-    if (s <= 9)  return { label: 'Off',     cls: 'zero' };
-    if (s <= 49) return { label: 'Lenient', cls: 'low'  };
-    if (s <= 89) return { label: 'Default', cls: 'mid'  };
-    return { label: 'Strict', cls: 'high' };
+    if (s <= 9)  return { label: t('options_band_off'),     cls: 'zero' };
+    if (s <= 49) return { label: t('options_band_lenient'), cls: 'low'  };
+    if (s <= 89) return { label: t('options_band_default'), cls: 'mid'  };
+    return { label: t('options_band_strict'), cls: 'high' };
   }
 
   // ----- Saved toast (auto-hide) -----------------------------------------
@@ -77,27 +101,92 @@
   // ----- Read/write storage ---------------------------------------------
 
   function loadFromStorage() {
-    try {
-      chrome.storage.local.get(
-        [STORAGE_KEYS.SENSITIVITY, STORAGE_KEYS.OVERRIDES],
-        (result) => {
-          if (chrome.runtime.lastError) {
-            console.error('NOAIS options: storage read failed', chrome.runtime.lastError);
+    // Sensitivity + hard-mode sites are in chrome.storage.sync (via NOAIS_SYNC).
+    // Per-site overrides are in chrome.storage.local (they can be large).
+    let pending = 2;
+    let done = false;
+    function maybeFinish() {
+      pending -= 1;
+      if (pending === 0 && !done) {
+        done = true;
+        renderAll();
+      }
+    }
+    function readSensitivity() {
+      try {
+        if (sync) {
+          sync.get(STORAGE_KEYS.SENSITIVITY, (err, value) => {
+            if (!err && typeof value === 'number' && value >= 0 && value <= 100) {
+              currentSensitivity = value;
+            } else {
+              currentSensitivity = 100;
+            }
+            maybeFinish();
+          });
+          return;
+        }
+      } catch (_e) { /* fall through */ }
+      try {
+        chrome.storage.local.get([STORAGE_KEYS.SENSITIVITY], (result) => {
+          if (chrome.runtime && chrome.runtime.lastError) {
+            console.error('NOAIS options: sync read failed', chrome.runtime.lastError);
+            currentSensitivity = 100;
+            maybeFinish();
             return;
           }
           const sens = result && result[STORAGE_KEYS.SENSITIVITY];
           currentSensitivity = (typeof sens === 'number' && sens >= 0 && sens <= 100) ? sens : 100;
-          const ov = result && result[STORAGE_KEYS.OVERRIDES];
-          currentOverrides = (ov && typeof ov === 'object' && !Array.isArray(ov)) ? ov : {};
-          renderAll();
-        }
-      );
-    } catch (err) {
-      console.error('NOAIS options: load failed', err);
+          maybeFinish();
+        });
+      } catch (err) {
+        console.error('NOAIS options: sens read threw', err);
+        currentSensitivity = 100;
+        maybeFinish();
+      }
     }
+    function readOverridesAndHardMode() {
+      try {
+        chrome.storage.local.get(
+          [STORAGE_KEYS.OVERRIDES, STORAGE_KEYS.HARD_MODE_SITES],
+          (result) => {
+            if (chrome.runtime && chrome.runtime.lastError) {
+              console.error('NOAIS options: local read failed', chrome.runtime.lastError);
+              currentOverrides = {};
+              currentHardModeSites = [];
+              maybeFinish();
+              return;
+            }
+            const ov = result && result[STORAGE_KEYS.OVERRIDES];
+            currentOverrides = (ov && typeof ov === 'object' && !Array.isArray(ov)) ? ov : {};
+            const hm = result && result[STORAGE_KEYS.HARD_MODE_SITES];
+            currentHardModeSites = Array.isArray(hm) ? hm.filter(h => typeof h === 'string' && h.length > 0) : [];
+            maybeFinish();
+          }
+        );
+      } catch (err) {
+        console.error('NOAIS options: local read threw', err);
+        currentOverrides = {};
+        currentHardModeSites = [];
+        maybeFinish();
+      }
+    }
+    readSensitivity();
+    readOverridesAndHardMode();
   }
 
   function saveSensitivity(value) {
+    try {
+      if (sync) {
+        sync.set(STORAGE_KEYS.SENSITIVITY, value, (err) => {
+          if (err) {
+            console.error('NOAIS options: save failed', err);
+            return;
+          }
+          showSavedToast();
+        });
+        return;
+      }
+    } catch (_e) { /* fall through */ }
     try {
       chrome.storage.local.set({ [STORAGE_KEYS.SENSITIVITY]: value }, () => {
         if (chrome.runtime.lastError) {
@@ -270,6 +359,98 @@
   function renderAll() {
     renderSensitivity();
     renderSiteList();
+    renderHardModeList();
+  }
+
+  // ----- Hard-mode sites list (v1.1) -------------------------------------
+
+  function buildHardModeRows() {
+    const rows = [];
+    for (const h of currentHardModeSites) {
+      rows.push({ hostname: h, isCurated: settings.CURATED_HOSTS.includes(h) });
+    }
+    return rows;
+  }
+
+  function renderHardModeList() {
+    // Clear existing children safely (no innerHTML).
+    while (hardModeListEl.firstChild) hardModeListEl.removeChild(hardModeListEl.firstChild);
+    const rows = buildHardModeRows();
+    if (rows.length === 0) {
+      const li = document.createElement('li');
+      li.className = 'site-row hard-mode-empty';
+      li.setAttribute('data-empty', 'true');
+      const span = document.createElement('span');
+      span.className = 'site-hostname';
+      span.textContent = t('options_hard_mode_empty');
+      li.appendChild(span);
+      hardModeListEl.appendChild(li);
+      return;
+    }
+    for (const row of rows) {
+      hardModeListEl.appendChild(buildHardModeRow(row));
+    }
+  }
+
+  function buildHardModeRow(row) {
+    const li = document.createElement('li');
+    li.className = 'site-row';
+    li.setAttribute('data-hostname', row.hostname);
+
+    const hostnameSpan = document.createElement('span');
+    hostnameSpan.className = 'site-hostname';
+    hostnameSpan.textContent = row.hostname;
+    li.appendChild(hostnameSpan);
+
+    const badge = document.createElement('span');
+    badge.className = row.isCurated ? 'curated-badge' : 'custom-badge';
+    badge.textContent = row.isCurated ? t('options_badge_curated') : t('options_badge_custom');
+    badge.setAttribute('aria-hidden', 'true');
+    li.appendChild(badge);
+
+    // Remove button — clicking drops the site from hard-mode.
+    const removeButton = document.createElement('button');
+    removeButton.type = 'button';
+    removeButton.className = 'remove-button';
+    removeButton.textContent = t('options_hard_mode_remove');
+    removeButton.setAttribute('aria-label', t('options_hard_mode_remove') + ' ' + row.hostname);
+    removeButton.addEventListener('click', () => {
+      removeHardModeSite(row.hostname);
+    });
+    li.appendChild(removeButton);
+
+    return li;
+  }
+
+  function removeHardModeSite(hostname) {
+    const next = currentHardModeSites.filter(h => h !== hostname);
+    try {
+      if (sync) {
+        sync.set(STORAGE_KEYS.HARD_MODE_SITES, next, (err) => {
+          if (err) {
+            console.error('NOAIS options: hard-mode save failed', err);
+            return;
+          }
+          currentHardModeSites = next;
+          renderHardModeList();
+          showSavedToast();
+        });
+        return;
+      }
+    } catch (_e) { /* fall through */ }
+    try {
+      chrome.storage.local.set({ [STORAGE_KEYS.HARD_MODE_SITES]: next }, () => {
+        if (chrome.runtime.lastError) {
+          console.error('NOAIS options: hard-mode save failed', chrome.runtime.lastError);
+          return;
+        }
+        currentHardModeSites = next;
+        renderHardModeList();
+        showSavedToast();
+      });
+    } catch (err) {
+      console.error('NOAIS options: hard-mode save threw', err);
+    }
   }
 
   // ----- Add custom site -------------------------------------------------
@@ -341,23 +522,69 @@
     } catch (_e) { /* ignore */ }
   }
 
+  // ----- Sync indicator (v1.1) -------------------------------------------
+
+  function renderSyncStatus() {
+    if (!syncStatusEl) return;
+    // chrome.storage.sync is the canonical signal. If it is undefined
+    // (Firefox < 145 with the manifest flag, or any browser that
+    // gates it behind a permission we don't have), show the
+    // "won't sync" banner.
+    const hasSync = (typeof chrome !== 'undefined' &&
+                     chrome.storage &&
+                     chrome.storage.sync &&
+                     typeof chrome.storage.sync.get === 'function');
+    if (hasSync) {
+      syncStatusEl.textContent = t('options_sync_indicator_on');
+      syncStatusEl.classList.remove('off');
+      syncStatusEl.classList.add('on');
+    } else {
+      syncStatusEl.textContent = t('options_sync_indicator_off');
+      syncStatusEl.classList.remove('on');
+      syncStatusEl.classList.add('off');
+    }
+  }
+
   // ----- Live sync from other tabs --------------------------------------
 
   function onStorageChanged(changes, area) {
-    if (area !== 'local') return;
     let needsRender = false;
-    if (changes[STORAGE_KEYS.SENSITIVITY]) {
-      const newSens = changes[STORAGE_KEYS.SENSITIVITY].newValue;
-      if (typeof newSens === 'number' && newSens !== currentSensitivity) {
-        currentSensitivity = newSens;
-        needsRender = true;
+    if (area === 'sync') {
+      if (changes[STORAGE_KEYS.SENSITIVITY]) {
+        const newSens = changes[STORAGE_KEYS.SENSITIVITY].newValue;
+        if (typeof newSens === 'number' && newSens !== currentSensitivity) {
+          currentSensitivity = newSens;
+          needsRender = true;
+        }
       }
-    }
-    if (changes[STORAGE_KEYS.OVERRIDES]) {
-      const newOv = changes[STORAGE_KEYS.OVERRIDES].newValue;
-      if (newOv && typeof newOv === 'object') {
-        currentOverrides = newOv;
-        needsRender = true;
+      if (changes[STORAGE_KEYS.HARD_MODE_SITES]) {
+        const newHm = changes[STORAGE_KEYS.HARD_MODE_SITES].newValue;
+        if (Array.isArray(newHm)) {
+          currentHardModeSites = newHm.filter(h => typeof h === 'string' && h.length > 0);
+          needsRender = true;
+        }
+      }
+    } else if (area === 'local') {
+      if (changes[STORAGE_KEYS.SENSITIVITY]) {
+        const newSens = changes[STORAGE_KEYS.SENSITIVITY].newValue;
+        if (typeof newSens === 'number' && newSens !== currentSensitivity) {
+          currentSensitivity = newSens;
+          needsRender = true;
+        }
+      }
+      if (changes[STORAGE_KEYS.OVERRIDES]) {
+        const newOv = changes[STORAGE_KEYS.OVERRIDES].newValue;
+        if (newOv && typeof newOv === 'object') {
+          currentOverrides = newOv;
+          needsRender = true;
+        }
+      }
+      if (changes[STORAGE_KEYS.HARD_MODE_SITES]) {
+        const newHm = changes[STORAGE_KEYS.HARD_MODE_SITES].newValue;
+        if (Array.isArray(newHm)) {
+          currentHardModeSites = newHm.filter(h => typeof h === 'string' && h.length > 0);
+          needsRender = true;
+        }
       }
     }
     if (needsRender) renderAll();
@@ -378,5 +605,6 @@
     chrome.storage.onChanged.addListener(onStorageChanged);
   }
 
+  renderSyncStatus();
   loadFromStorage();
 })();
