@@ -119,14 +119,6 @@
     "message": "NOAIS scans every page by default. Turn it off for sites where you don't want detection.",
     "description": "Helper text under the per-site card title."
   },
-  "options_allowlist_card_title": {
-    "message": "Allowlisted elements",
-    "description": "Title of the per-element allowlist card on the options page (v1.1)."
-  },
-  "options_allowlist_help": {
-    "message": "Elements you have asked NOAIS to leave alone. Click Remove to start scoring them again.",
-    "description": "Helper text under the allowlist card title."
-  },
   "options_add_site_placeholder": {
     "message": "example.com",
     "description": "Placeholder text for the add-custom-site input."
@@ -134,14 +126,6 @@
   "options_add_site_button": {
     "message": "Add",
     "description": "Label of the add-custom-site button."
-  },
-  "options_allowlist_empty": {
-    "message": "No allowlisted elements yet.",
-    "description": "Empty-state message shown when the per-element allowlist contains no entries."
-  },
-  "options_allowlist_remove": {
-    "message": "Remove",
-    "description": "Label of the per-element allowlist Remove button."
   },
   "options_sync_indicator_on": {
     "message": "Settings sync across devices via your browser.",

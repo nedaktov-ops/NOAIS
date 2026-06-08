@@ -1,4 +1,4 @@
-// NOAIS background service worker - v1.1.0
+// NOAIS background service worker - v1.1.1
 //
 // Responsibilities (v1.0 → v1.1):
 //   - Log the installation reason (only on actual install / update events).

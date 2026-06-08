@@ -77,11 +77,7 @@
    * @returns {*}
    */
   function get(key, localBlob, syncBlob) {
-    if (!KEYS[key] && KEYS[key] !== '') {
-      // We accept the value form (e.g. KEYS.ENABLED) as well as the
-      // raw key string. The freeze on Object.values gives us that
-      // mapping.
-    }
+    // Accept both the key constant (e.g. KEYS.ENABLED) and raw key string.
     const v = (syncBlob && Object.prototype.hasOwnProperty.call(syncBlob, key))
       ? syncBlob[key]
       : (localBlob && Object.prototype.hasOwnProperty.call(localBlob, key))

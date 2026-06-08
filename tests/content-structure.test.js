@@ -137,9 +137,9 @@ tests.push({
 });
 
 tests.push({
-  name: 'content.js: v1.1.0 banner in load log',
+  name: 'content.js: v1.1.x banner in load log',
   fn: () => {
-    assert.match(CONTENT, /v1\.1\.0/);
+    assert.match(CONTENT, /v1\.1\.[0-9]+/);
   },
 });
 
