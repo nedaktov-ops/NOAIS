@@ -32,9 +32,13 @@
   const siteHostnameEl = document.getElementById('site-hostname');
   const openSettingsEl = document.getElementById('open-settings');
   const openWhyEl = document.getElementById('open-why');
-  const toggleSiteEl = document.getElementById('toggle-site');
+const toggleSiteEl = document.getElementById('toggle-site');
 
-  if (
+// Debounce lock for the per-site toggle button.
+let toggleInFlight = false;
+const TOGGLE_COOLDOWN_MS = 200;
+
+if (
     !toggleEl || !statusEl || !scoreEl || !scoreBarEl || !wordCountEl ||
     !countEl || !siteStatusEl || !siteHostnameEl || !openSettingsEl ||
     !openWhyEl || !toggleSiteEl
@@ -272,23 +276,30 @@
   }
 
   function onToggleSite() {
+    if (toggleInFlight) return;
+    toggleInFlight = true;
+    setTimeout(() => { toggleInFlight = false; }, TOGGLE_COOLDOWN_MS);
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const tab = Array.isArray(tabs) && tabs[0];
-      if (!tab || typeof tab.id !== 'number') return;
+      if (!tab || typeof tab.id !== 'number') { toggleInFlight = false; return; }
       const url = tab.url || '';
       const hostname = settings ? settings.parseHostname(url) : '';
+      if (!hostname) { toggleInFlight = false; return; }
       try {
         chrome.tabs.sendMessage(tab.id, { type: TOGGLE_SITE_TYPE, hostname }, (response) => {
-          if (chrome.runtime.lastError) return;
-          // Update button text to reflect new state.
-          const wasEnabled = toggleSiteEl.textContent === t('popup_disable_site') ||
-                             toggleSiteEl.textContent === '__MSG_popup_toggle_site__';
-          updateToggleButton(hostname, !wasEnabled);
-          // Re-query the tab to refresh the score display.
+          toggleInFlight = false;
+          if (chrome.runtime.lastError) {
+            console.warn('NOAIS popup: toggle failed — content script not responding', chrome.runtime.lastError);
+            renderSiteStatusError('Toggle failed — try again');
+            return;
+          }
+          // Re-query the tab to refresh the score display from storage.
           queryActiveTab();
         });
       } catch (err) {
+        toggleInFlight = false;
         console.error('NOAIS popup: failed to send NOAIS_TOGGLE_SITE', err);
+        renderSiteStatusError('Toggle failed — try again');
       }
     });
   }
@@ -313,12 +324,13 @@
         // 2. Query the content script for the page analysis.
         try {
           chrome.tabs.sendMessage(tab.id, { type: MESSAGE_TYPE }, (response) => {
-            if (chrome.runtime.lastError) {
-              renderScoreError('N/A');
-              renderCountError('N/A');
-              renderWordCount(0);
-              return;
-            }
+      if (chrome.runtime.lastError) {
+        renderScoreError('N/A');
+        renderCountError('N/A');
+        renderWordCount(0);
+        renderSiteStatusError('N/A');
+        return;
+      }
             if (response && response.ok) {
               renderScore(typeof response.score === 'number' ? response.score : 0);
               renderCount(typeof response.count === 'number' ? response.count : 0);

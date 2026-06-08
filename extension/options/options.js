@@ -128,12 +128,12 @@
       } catch (_e) { /* fall through */ }
       try {
         chrome.storage.local.get([STORAGE_KEYS.SENSITIVITY], (result) => {
-          if (chrome.runtime && chrome.runtime.lastError) {
-            console.error('NOAIS options: sync read failed', chrome.runtime.lastError);
-            currentSensitivity = 100;
-            maybeFinish();
-            return;
-          }
+    if (chrome.runtime && chrome.runtime.lastError) {
+      console.error('NOAIS options: local read failed', chrome.runtime.lastError);
+      currentSensitivity = 100;
+      maybeFinish();
+      return;
+    }
           const sens = result && result[STORAGE_KEYS.SENSITIVITY];
           currentSensitivity = (typeof sens === 'number' && sens >= 0 && sens <= 100) ? sens : 100;
           maybeFinish();
@@ -183,16 +183,28 @@
 
   function saveSensitivity(value) {
     try {
-      if (sync) {
-        sync.set(STORAGE_KEYS.SENSITIVITY, value, (err) => {
-          if (err) {
-            console.error('NOAIS options: save failed', err);
+  if (sync) {
+    sync.set(STORAGE_KEYS.SENSITIVITY, value, (err) => {
+      if (err) {
+        console.warn('NOAIS options: sync save failed, falling back to local', err);
+        // Fall back to local storage on sync failure (quota, disabled, etc.)
+        chrome.storage.local.set({ [STORAGE_KEYS.SENSITIVITY]: value }, () => {
+          if (chrome.runtime.lastError) {
+            console.error('NOAIS options: local fallback also failed', chrome.runtime.lastError);
             return;
           }
+          currentSensitivity = value;
+          renderAll();
           showSavedToast();
         });
         return;
       }
+      currentSensitivity = value;
+      renderAll();
+      showSavedToast();
+    });
+    return;
+  }
     } catch (_e) { /* fall through */ }
     try {
       chrome.storage.local.set({ [STORAGE_KEYS.SENSITIVITY]: value }, () => {
@@ -453,10 +465,14 @@
       obj[h] = true;
     }
     try {
-      if (sync) {
-        sync.set(STORAGE_KEYS.HARD_MODE_SITES, obj, (err) => {
-          if (err) {
-            console.error('NOAIS options: hard-mode save failed', err);
+  if (sync) {
+    sync.set(STORAGE_KEYS.HARD_MODE_SITES, obj, (err) => {
+      if (err) {
+        console.warn('NOAIS options: hard-mode sync save failed, falling back to local', err);
+        // Fall back to local storage on sync failure.
+        chrome.storage.local.set({ [STORAGE_KEYS.HARD_MODE_SITES]: obj }, () => {
+          if (chrome.runtime.lastError) {
+            console.error('NOAIS options: hard-mode local fallback also failed', chrome.runtime.lastError);
             return;
           }
           currentHardModeSites = sitesArray;
@@ -465,6 +481,12 @@
         });
         return;
       }
+      currentHardModeSites = sitesArray;
+      renderHardModeList();
+      showSavedToast();
+    });
+    return;
+  }
     } catch (_e) { /* fall through */ }
     try {
       chrome.storage.local.set({ [STORAGE_KEYS.HARD_MODE_SITES]: obj }, () => {

@@ -25,6 +25,11 @@
     return;
   }
 
+  // Debounce lock: prevents rapid Ctrl+Shift+A presses from causing
+  // read-modify-write races in chrome.storage.local.
+  let lastToggleTime = 0;
+  const TOGGLE_COOLDOWN_MS = 150;
+
   function parseHostname(url) {
     if (typeof url !== 'string' || url.length === 0) return '';
     try {
@@ -37,6 +42,9 @@
   }
 
   function toggleCurrentSite() {
+    const now = Date.now();
+    if (now - lastToggleTime < TOGGLE_COOLDOWN_MS) return; // debounce
+    lastToggleTime = now;
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (chrome.runtime && chrome.runtime.lastError) {
         return;

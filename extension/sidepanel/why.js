@@ -1,7 +1,7 @@
 // NOAIS Why side panel script - v1.1.0
 //
 // Renders the current page's AI score and a per-signal breakdown.
-// Listens for NOAIS_PAGE_SCORE messages broadcast by background.js
+// Listens for NOAIS_PAGE_SCORE messages sent by content.js
 // and updates the DOM. Falls back to reading storage on panel open
 // so the panel is never empty.
 //

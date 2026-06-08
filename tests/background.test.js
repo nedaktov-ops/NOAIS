@@ -285,7 +285,7 @@ tests.push({
 // =====================================================================
 
 tests.push({
-  name: 'background: onInstalled handles getManifest throwing gracefully, falls back to default version',
+  name: 'background: onInstalled handles getManifest throwing gracefully, falls back to unknown',
   fn: () => {
     const stubs = {
       getManifest: () => { throw new Error('manifest unavailable'); },
@@ -293,15 +293,15 @@ tests.push({
     const { recorded } = loadBackground(stubs);
     const handler = recorded.onInstalledHandlers[0];
     handler({ reason: 'install' });
-    // Should log with fallback version (1.1.1) — the catch ignores the error
+    // Should log with fallback version 'unknown' — never lie about version
     const logMsgs = recorded.consoleLogs.map((a) => a.join(' '));
-    assert.ok(logMsgs.some((m) => m.includes('v1.1.1')), 'should use fallback version string');
+    assert.ok(logMsgs.some((m) => m.includes('vunknown')), 'should use fallback version string');
     assert.strictEqual(recorded.tabsCreate.length, 1, 'should still open welcome tab');
   },
 });
 
 tests.push({
-  name: 'background: onInstalled handles getManifest returning null gracefully',
+  name: 'background: onInstalled handles getManifest returning null gracefully, falls back to unknown',
   fn: () => {
     const stubs = {
       getManifest: () => null,
@@ -310,7 +310,7 @@ tests.push({
     const handler = recorded.onInstalledHandlers[0];
     handler({ reason: 'install' });
     const logMsgs = recorded.consoleLogs.map((a) => a.join(' '));
-    assert.ok(logMsgs.some((m) => m.includes('v1.1.1')), 'should use fallback version');
+    assert.ok(logMsgs.some((m) => m.includes('vunknown')), 'should use fallback version');
     assert.strictEqual(recorded.tabsCreate.length, 1, 'should still open welcome tab');
   },
 });

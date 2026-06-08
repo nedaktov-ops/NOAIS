@@ -1,9 +1,9 @@
 # NOAIS
 
 [![CI](https://github.com/nedaktov-ops/NOAIS/actions/workflows/ci.yml/badge.svg)](https://github.com/nedaktov-ops/NOAIS/actions/workflows/ci.yml)
-![Tests](https://img.shields.io/badge/tests-199%2F199-brightgreen)
+![Tests](https://img.shields.io/badge/tests-301%2F301-brightgreen)
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue)
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Version](https://img.shields.io/badge/version-1.1.2-blue)
 
 **NOAIS** stands for **N**o **A**rtificial **I**ntelligence **S**lop.
 
@@ -22,7 +22,9 @@ The web is filling up with low-quality, auto-generated "slop" — text, images, 
 
 ## Features (current)
 
-- **v1.0.0** (current): **First public release.** Download `.zip` from Releases; install on Chrome/Chromium/Edge/Brave as unpacked, on Firefox manually or via AMO (submission prep in `EXTENSION-LISTING.md`). 199/199 tests green; CI on GitHub Actions. `make package` builds `dist/NOAIS-v1.0.0-{chrome,firefox}.zip` (44 KB each). Includes `PRIVACY.md` and full install + permissions documentation. **Apache-2.0.**
+- **v1.1.2** (current): **User-facing polish + bugfixes.** Download `.zip` from Releases; install on Chrome/Chromium/Edge/Brave as unpacked, on Firefox manually or via AMO. 301/301 tests green; CI on GitHub Actions. `make package` builds `dist/NOAIS-v1.1.2-{chrome,firefox}.zip` (80 KB each). Includes `PRIVACY.md` and full install + permissions documentation. **Apache-2.0.** New in v1.1.2: hard-mode per-site toggle in options, sidepanel real-time score updates, dark-mode fixes, accessibility (ARIA + keyboard), CSP, and 11 bugfixes.
+- **v1.1.0**: **Settings + UI + i18n + sync.** First-run welcome page, "Why am I seeing this?" side panel, keyboard shortcut (Ctrl+Shift+A), `chrome.storage.sync` for 2 small keys, hard-mode sites card, per-tab disable button, 60+ i18n strings, headless fixtures for welcome + why panel. **277/277 green** (238 Node + 39 headless).
+- **v1.0.0**: **First public release.** Download `.zip` from Releases; install on Chrome/Chromium/Edge/Brave as unpacked, on Firefox manually or via AMO (submission prep in `EXTENSION-LISTING.md`). 199/199 tests green; CI on GitHub Actions. `make package` builds `dist/NOAIS-v1.0.0-{chrome,firefox}.zip` (44 KB each). Includes `PRIVACY.md` and full install + permissions documentation. **Apache-2.0.**
 - **v0.7.0**: **Instagram + TikTok adapters** — Instagram matches `instagram.com / m.instagram.com / www / *.subdomains`; targets `<article>` and extracts first `[dir="auto"]` ≥ 30 chars. TikTok matches `tiktok.com / m.tiktok.com / www / *.subdomains`; targets `[data-e2e="comment-item"]` and extracts `[data-e2e="comment-text"]` with a fallback to first `<p>`/`<span>` ≥ 30 chars (resilient to future TikTok DOM changes). Both reuse v0.5's `shortTextMode` thresholds, are idempotent, and add no new heuristics. **199/199 green** (168 Node + 31 headless; 22 new unit tests + 9 new end-to-end assertions). This release was built with **two parallel subagents** (one per adapter) and an integration step.
 - **v0.6.0**: **Facebook adapter** — matches `facebook.com / m.facebook.com / fb.com / fb.me`; targets `[role="article"]` and extracts the first long-enough `[dir="auto"]` child (≥30 chars). Idempotent decorate (each article scored once) + MutationObserver. Reuses v0.5's `shortTextMode` thresholds. **166/166 green** (144 Node + 22 headless, including 11 unit tests + 3 end-to-end assertions on the Facebook fixture).
 - **v0.5.0**: **YouTube adapter** — detects `ytd-comment-renderer` elements and decorates them with a small NOAIS badge (NOAIS 54, etc.) and a colour-coded severity outline. Soft mode (default) = badge only. Hard mode = dim + blur. **MutationObserver** for infinite scroll. New `shortTextMode` for the heuristics engine handles 5+ word texts. 132 Node + 19 headless tests = **151 / 151 green**.
@@ -43,10 +45,10 @@ The web is filling up with low-quality, auto-generated "slop" — text, images, 
 
 ## Install
 
-NOAIS v1.0.0 is available now.
+NOAIS v1.1.2 is available now.
 
-- **Chrome / Edge / Brave / Opera:** Download [`NOAIS-v1.0.0-chrome.zip`](https://github.com/nedaktov-ops/NOAIS/releases/tag/v1.0) from the Releases page, unzip, open `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, and select the unzipped directory.
-- **Firefox (manual):** Download [`NOAIS-v1.0.0-firefox.zip`](https://github.com/nedaktov-ops/NOAIS/releases/tag/v1.0), open `about:addons`, click the **gear icon** → **Install Add-on From File...** → select the zip.
+- **Chrome / Edge / Brave / Opera:** Download [`NOAIS-v1.1.2-chrome.zip`](https://github.com/nedaktov-ops/NOAIS/releases/tag/v1.1.2) from the Releases page, unzip, open `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, and select the unzipped directory.
+- **Firefox (manual):** Download [`NOAIS-v1.1.2-firefox.zip`](https://github.com/nedaktov-ops/NOAIS/releases/tag/v1.1.2), open `about:addons`, click the **gear icon** → **Install Add-on From File...** → select the zip.
 - **Firefox (AMO):** The AMO listing is in review; see [`EXTENSION-LISTING.md`](EXTENSION-LISTING.md) for the pre-formatted submission metadata. Will auto-update once approved.
 - **From source:** Clone the repo and load `extension/` as unpacked (see [Develop](#develop)).
 

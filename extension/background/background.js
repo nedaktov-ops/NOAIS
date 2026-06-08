@@ -32,7 +32,7 @@ chrome.runtime.onInstalled.addListener((details) => {
   // are misleading — the extension itself has not changed.
   if (reason !== 'install' && reason !== 'update') return;
 
-  let version = '1.1.1';
+  let version = 'unknown';
   try {
     if (chrome.runtime && typeof chrome.runtime.getManifest === 'function') {
       const m = chrome.runtime.getManifest();
@@ -78,30 +78,48 @@ chrome.runtime.onMessage.addListener((message, sender, _sendResponse) => {
 chrome.tabs.onRemoved.addListener((tabId) => {
   try {
     chrome.storage.local.get(['noais_tab_overrides', 'noais_last_scan'], (result) => {
-      if (chrome.runtime && chrome.runtime.lastError) return;
-      const overrides = (result && result.noais_tab_overrides && typeof result.noais_tab_overrides === 'object')
-        ? Object.assign({}, result.noais_tab_overrides)
-        : {};
-      const scans = (result && result.noais_last_scan && typeof result.noais_last_scan === 'object')
-        ? Object.assign({}, result.noais_last_scan)
-        : {};
-      let changed = false;
-      if (Object.prototype.hasOwnProperty.call(overrides, tabId)) {
-        delete overrides[tabId];
-        changed = true;
+      if (chrome.runtime && chrome.runtime.lastError) {
+        // Storage may be temporarily unavailable during browser shutdown.
+        // Retry once after a short delay; if it fails again, log and give up.
+        console.warn('[NOAIS] tabs.onRemoved: storage.get failed, retrying in 100ms', chrome.runtime.lastError);
+        setTimeout(() => {
+          chrome.storage.local.get(['noais_tab_overrides', 'noais_last_scan'], (retryResult) => {
+            if (chrome.runtime && chrome.runtime.lastError) {
+              console.error('[NOAIS] tabs.onRemoved: retry also failed — stale data will persist for tab', tabId, chrome.runtime.lastError);
+              return;
+            }
+            cleanupTabData(tabId, retryResult);
+          });
+        }, 100);
+        return;
       }
-      if (Object.prototype.hasOwnProperty.call(scans, tabId)) {
-        delete scans[tabId];
-        changed = true;
-      }
-      if (changed) {
-        chrome.storage.local.set({
-          noais_tab_overrides: overrides,
-          noais_last_scan: scans,
-        });
-      }
+      cleanupTabData(tabId, result);
     });
   } catch (e) {
     // tabs.onRemoved fires even during browser shutdown; ignore errors.
   }
 });
+
+function cleanupTabData(tabId, result) {
+  const overrides = (result && result.noais_tab_overrides && typeof result.noais_tab_overrides === 'object')
+    ? Object.assign({}, result.noais_tab_overrides)
+    : {};
+  const scans = (result && result.noais_last_scan && typeof result.noais_last_scan === 'object')
+    ? Object.assign({}, result.noais_last_scan)
+    : {};
+  let changed = false;
+  if (Object.prototype.hasOwnProperty.call(overrides, tabId)) {
+    delete overrides[tabId];
+    changed = true;
+  }
+  if (Object.prototype.hasOwnProperty.call(scans, tabId)) {
+    delete scans[tabId];
+    changed = true;
+  }
+  if (changed) {
+    chrome.storage.local.set({
+      noais_tab_overrides: overrides,
+      noais_last_scan: scans,
+    });
+  }
+}

@@ -63,8 +63,7 @@
         sendMessage: function (msg) {
           try { chrome.runtime.sendMessage(msg); } catch (_e) { /* ignore */ }
         },
-        getTabId: function () { return 0; },
-        getHostname: function () { return location.hostname || 'localhost'; },
+    getHostname: function () { return location.hostname || 'localhost'; },
         viewport: { width: window.innerWidth || 1024, height: window.innerHeight || 768 },
       });
     } catch (_e) { badgeTooltip = null; }
@@ -365,19 +364,23 @@
     if (message.type === 'NOAIS_TOGGLE_SITE') {
       try {
         const hostname = message.hostname || (location.hostname || '').toLowerCase();
-        chrome.storage.local.get(['noais_site_overrides', 'noais_enabled'], (result) => {
+        if (!hostname) {
+          sendResponse({ ok: false, error: 'no hostname' });
+          return true;
+        }
+        chrome.storage.local.get(['noais_site_overrides'], (result) => {
           const overrides = (result && result.noais_site_overrides && typeof result.noais_site_overrides === 'object')
             ? Object.assign({}, result.noais_site_overrides)
             : {};
-          const globalEnabled = (result && result.noais_enabled) !== false;
-          // Toggle: if globally enabled, disable this site; if globally disabled, enable it.
-          if (globalEnabled) {
-            overrides[hostname] = false;
-          } else {
-            delete overrides[hostname]; // remove override so global default applies
-          }
+          // Flip this site's override directly, regardless of global state.
+          // If the key is absent or true → disable (false). If false → enable (true).
+          const currentlyDisabled = overrides[hostname] === false;
+          overrides[hostname] = currentlyDisabled ? true : false;
           chrome.storage.local.set({ noais_site_overrides: overrides }, () => {
-            if (chrome.runtime.lastError) return;
+            if (chrome.runtime.lastError) {
+              sendResponse({ ok: false, error: String(chrome.runtime.lastError.message) });
+              return;
+            }
             refreshEffective();
             // Re-scan with the new effective settings.
             setTimeout(() => {
@@ -386,13 +389,14 @@
               if (adapter) scanWithAdapter(adapter);
               persistPageScore();
             }, 50);
+            sendResponse({ ok: true, enabled: !currentlyDisabled });
           });
         });
-        sendResponse({ ok: true });
+        return true; // keep channel open for async sendResponse
       } catch (err) {
         sendResponse({ ok: false, error: String(err) });
+        return true;
       }
-      return false;
     }
     return false;
   });
