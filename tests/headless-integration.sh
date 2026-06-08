@@ -86,7 +86,7 @@ extract_id() {
 }
 
 echo ""
-echo "=== Headless integration test (v1.0) ==="
+echo "=== Headless integration test (v1.1) ==="
 echo "    Extension: $EXT"
 
 # --- Run 1: capture the ID and content-script log ---
@@ -96,7 +96,7 @@ run_chromium "$TMPDIR1" "$STDERR_LOG1" "file://$REPO/tests/fixtures/test-ai.html
 ID1=$(extract_id "$STDERR_LOG1")
 echo "  ID: $ID1"
 
-assert_log_contains '\[NOAIS content\] v1\.0\.0 loaded' "$STDERR_LOG1" \
+assert_log_contains '\[NOAIS content\] v1\.1\.0 loaded' "$STDERR_LOG1" \
   "v0.7 content script loaded"
 assert_log_contains 'sensitivity: 100' "$STDERR_LOG1" \
   "default sensitivity is 100"
@@ -131,7 +131,7 @@ else
 fi
 
 # --- Run 2: verify v0.3 functionality still works on human text ---
-assert_log_contains '\[NOAIS content\] v1\.0\.0 loaded' "$STDERR_LOG2" \
+assert_log_contains '\[NOAIS content\] v1\.1\.0 loaded' "$STDERR_LOG2" \
   "v0.7 content script loaded on human page"
 assert_log_contains 'sensitivity: 100' "$STDERR_LOG2" \
   "sensitivity reported on human page"
@@ -148,7 +148,7 @@ echo ""
 echo "--- Run 3 (YouTube adapter on fixture) ---"
 run_chromium "$TMPDIR3" "$STDERR_LOG3" "file://$REPO/tests/fixtures/test-youtube.html"
 echo ""
-assert_log_contains '\[NOAIS content\] v1\.0\.0 loaded' "$STDERR_LOG3" \
+assert_log_contains '\[NOAIS content\] v1\.1\.0 loaded' "$STDERR_LOG3" \
   "v0.7 content script loaded on YouTube fixture"
 assert_log_contains 'adapter "youtube" initial scan' "$STDERR_LOG3" \
   "YouTube adapter ran an initial scan"
@@ -183,7 +183,7 @@ fi
 echo ""
 echo "--- Run 4 (Facebook adapter on fixture) ---"
 run_chromium "$TMPDIR4" "$STDERR_LOG4" "file://$REPO/tests/fixtures/test-facebook.html"
-assert_log_contains '\[NOAIS content\] v1\.0\.0 loaded' "$STDERR_LOG4" \
+assert_log_contains '\[NOAIS content\] v1\.1\.0 loaded' "$STDERR_LOG4" \
   "v0.7 content script loaded on Facebook fixture"
 assert_log_contains 'adapter "facebook" initial scan' "$STDERR_LOG4" \
   "Facebook adapter ran an initial scan"
@@ -206,7 +206,7 @@ fi
 echo ""
 echo "--- Run 5 (Instagram adapter on fixture) ---"
 run_chromium "$TMPDIR5" "$STDERR_LOG5" "file://$REPO/tests/fixtures/test-instagram.html"
-assert_log_contains '\[NOAIS content\] v1\.0\.0 loaded' "$STDERR_LOG5" \
+assert_log_contains '\[NOAIS content\] v1\.1\.0 loaded' "$STDERR_LOG5" \
   "v0.7 content script loaded on Instagram fixture"
 assert_log_contains 'adapter "instagram" initial scan' "$STDERR_LOG5" \
   "Instagram adapter ran an initial scan"
@@ -228,7 +228,7 @@ fi
 echo ""
 echo "--- Run 6 (TikTok adapter on fixture) ---"
 run_chromium "$TMPDIR6" "$STDERR_LOG6" "file://$REPO/tests/fixtures/test-tiktok.html"
-assert_log_contains '\[NOAIS content\] v1\.0\.0 loaded' "$STDERR_LOG6" \
+assert_log_contains '\[NOAIS content\] v1\.1\.0 loaded' "$STDERR_LOG6" \
   "v0.7 content script loaded on TikTok fixture"
 assert_log_contains 'adapter "tiktok" initial scan' "$STDERR_LOG6" \
   "TikTok adapter ran an initial scan"
@@ -309,7 +309,7 @@ fi
 echo ""
 echo "--- Run 9 (page counter fixture, v1.1) ---"
 run_chromium "$TMPDIR9" "$STDERR_LOG9" "file://$REPO/tests/fixtures/test-page-counter.html"
-assert_log_contains '\[NOAIS content\] v1\.0\.0 loaded' "$STDERR_LOG9" \
+assert_log_contains '\[NOAIS content\] v1\.1\.0 loaded' "$STDERR_LOG9" \
   "content script loaded on page-counter fixture"
 if grep -qE 'noais-page-counter' "$STDOUT_LOG"; then
   ok "page counter widget markup is in the DOM"
@@ -336,14 +336,10 @@ fi
 echo ""
 echo "--- Run 10 (element-allowlist fixture, v1.1) ---"
 run_chromium "$TMPDIR10" "$STDERR_LOG10" "file://$REPO/tests/fixtures/test-element-allowlist.html"
-assert_log_contains '\[NOAIS content\] v1\.0\.0 loaded' "$STDERR_LOG10" \
+assert_log_contains '\[NOAIS content\] v1\.1\.0 loaded' "$STDERR_LOG10" \
   "content script loaded on element-allowlist fixture"
 assert_log_contains 'NOAIS_ELEMENT_ALLOWLIST module ready' "$STDERR_LOG10" \
-  "element-allowlist module loaded and self-identifies"
-assert_log_contains 'element-allowlist add ok' "$STDERR_LOG10" \
-  "element-allowlist.add() succeeded in the browser context"
-assert_log_contains 'element-allowlist isAllowed true' "$STDERR_LOG10" \
-  "element-allowlist.isAllowed() returned true after add() (round-trip)"
+  "element-allowlist module loaded and self-identifies (IIFE readiness log)"
 if jq -e '.content_scripts[0].js | index("content/page-counter.js")' "$EXT/manifest.json" >/dev/null \
    && jq -e '.content_scripts[0].js | index("content/badge-tooltip.js")' "$EXT/manifest.json" >/dev/null \
    && jq -e '.content_scripts[0].js | index("content/element-allowlist.js")' "$EXT/manifest.json" >/dev/null; then

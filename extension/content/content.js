@@ -1,9 +1,10 @@
-// NOAIS content script - v1.0.0
+// NOAIS content script - v1.1.0
 // Scans the current page for AI-generated content using:
 //   1. Hard-coded AI-phrase counter (v0.2, kept for backwards compat).
 //   2. Heuristic statistical analysis (v0.3, v0.4 sensitivity-aware).
 //   3. Per-site + global settings (v0.4): early-return if site is disabled.
 //   4. Platform-specific adapters (v0.5): per-element scoring + decoration.
+//   5. v1.1 UI modules: page counter, badge tooltip, element allowlist.
 //
 // Pure on-device, no network calls, no models, no innerHTML anywhere.
 
@@ -29,6 +30,87 @@
       if (matches) total += matches.length;
     }
     return total;
+  }
+
+  // ----- v1.1: Per-element allowlist check -----
+  // Returns true if the element's text is allowlisted (user chose
+  // "Don't show this" for a similar element on the same host).
+  function isElementAllowlisted(text) {
+    try {
+      if (!window.NOAIS_ELEMENT_ALLOWLIST || !window.NOAIS_STORAGE_KEYS) return false;
+      const hash = window.NOAIS_STORAGE_KEYS.hashText(text);
+      return window.NOAIS_ELEMENT_ALLOWLIST.isAllowed(location.hostname, hash);
+    } catch (_e) { return false; }
+  }
+
+  // ----- v1.1: Scored elements tracker (for page counter) -----
+  let scoredElements = [];
+
+  function resetScoredElements() {
+    scoredElements = [];
+  }
+
+  // ----- v1.1: Badge tooltip instance (created after DOM is ready) -----
+  let badgeTooltip = null;
+
+  function initBadgeTooltip() {
+    if (badgeTooltip) return;
+    if (!window.NOAIS_BADGE_TOOLTIP) return;
+    try {
+      badgeTooltip = window.NOAIS_BADGE_TOOLTIP.create({
+        document: document,
+        allowlist: window.NOAIS_ELEMENT_ALLOWLIST || null,
+        sendMessage: function (msg) {
+          try { chrome.runtime.sendMessage(msg); } catch (_e) { /* ignore */ }
+        },
+        getTabId: function () { return 0; },
+        getHostname: function () { return location.hostname || 'localhost'; },
+        viewport: { width: window.innerWidth || 1024, height: window.innerHeight || 768 },
+      });
+    } catch (_e) { badgeTooltip = null; }
+  }
+
+  function attachBadgeTooltip(element) {
+    if (!badgeTooltip) return;
+    try {
+      const badgeEl = element.querySelector('.noais-badge');
+      if (badgeEl) badgeTooltip.attach(badgeEl);
+    } catch (_e) { /* non-fatal */ }
+  }
+
+  // ----- v1.1: Page counter (created + mounted after initial scan) -----
+  let pageCounter = null;
+
+  function initPageCounter() {
+    if (pageCounter) return;
+    if (!window.NOAIS_PAGE_COUNTER) return;
+    if (!effective.enabled) return;
+    try {
+      if (window.NOAIS_PAGE_COUNTER.shouldHide({
+        protocol: location.protocol,
+        href: location.href,
+        enabled: effective.enabled,
+      })) return;
+    } catch (_e) { return; }
+    try {
+      pageCounter = window.NOAIS_PAGE_COUNTER.create({
+        document: document,
+        getCount: function () { return scoredElements.length; },
+        getItems: function () {
+          return scoredElements.slice(0, 50).map(function (r) {
+            return { score: r.score, text: r.text };
+          });
+        },
+      });
+      pageCounter.mount();
+      pageCounter.update();
+    } catch (_e) { pageCounter = null; }
+  }
+
+  function updatePageCounter() {
+    if (pageCounter) {
+      try { pageCounter.update(); } catch (_e) { /* ignore */ }
+    }
   }
 
   // ----- Storage + effective settings (v0.4) -----
@@ -120,6 +202,11 @@
       // Too short to bother. Don't add a badge.
       return null;
     }
+    // v1.1: Skip if element text is allowlisted.
+    if (isElementAllowlisted(text)) {
+      element.dataset.noaisAllowlisted = '1';
+      return null;
+    }
     const heuristics = window.NOAIS_HEURISTICS;
     if (!heuristics || typeof heuristics.analyzeText !== 'function') return null;
     let result;
@@ -134,7 +221,9 @@
     }
     const count = countAiPhrasesInText(text);
     try {
-      adapter.decorate(element, Number(result.score) || 0, count);
+      adapter.decorate(element, Number(result.score) || 0, count, (result.breakdown || null));
+      // v1.1: Attach badge tooltip to the newly created badge.
+      attachBadgeTooltip(element);
       // Hard mode = dim + blur the element.
       if (effective.hardMode && element.classList) {
         element.classList.add('noais-hard');
@@ -144,7 +233,11 @@
     } catch (e) {
       console.warn('[NOAIS] adapter.decorate failed', e);
     }
-    return { score: Number(result.score) || 0, count, wordCount: Number(result.wordCount) || 0 };
+    const record = { score: Number(result.score) || 0, count: count, wordCount: Number(result.wordCount) || 0, text: text, element: element };
+    scoredElements.push(record);
+    // v1.1: Update page counter widget after each new scored element.
+    updatePageCounter();
+    return record;
   }
 
   /**
@@ -259,6 +352,15 @@
       }
       return false;
     }
+    // v1.1: Respond with scored element count for the page counter.
+    if (message.type === 'NOAIS_GET_SCORED_COUNT') {
+      try {
+        sendResponse({ ok: true, count: scoredElements.length });
+      } catch (err) {
+        sendResponse({ ok: false, count: 0, error: String(err) });
+      }
+      return false;
+    }
     return false;
   });
 
@@ -268,17 +370,32 @@
   }
   refreshEffective();
 
+  // v1.1: Hydrate the element allowlist from storage at startup.
+  // This is async and best-effort; if it fails, allowlisting still works
+  // (just not persisted across sessions until the next load).
+  try {
+    if (window.NOAIS_ELEMENT_ALLOWLIST && typeof window.NOAIS_ELEMENT_ALLOWLIST._loadFromStorage === 'function') {
+      window.NOAIS_ELEMENT_ALLOWLIST._loadFromStorage().catch(function () {});
+    }
+  } catch (_e) { /* non-fatal */ }
+
   // Initial scan + observer. Use a small delay so the DOM is ready.
   setTimeout(() => {
     try {
+      // v1.1: Init the badge tooltip once the DOM is available.
+      initBadgeTooltip();
+      // v1.1: Reset scored elements before each adapter scan cycle.
+      resetScoredElements();
       const adapter = pickAdapter(getEffectiveHostname());
       if (adapter) {
         const n = scanWithAdapter(adapter);
         startObserver(adapter);
         console.log(`[NOAIS] v0.5.0 adapter "${adapter.id}" initial scan: ${n} elements`);
       }
+      // v1.1: Init + mount the page counter after the initial scan.
+      initPageCounter();
     } catch (e) {
-      console.warn('[NOAIS] initial adapter scan failed', e);
+      console.warn('[NOAIS] initial scan failed', e);
     }
   }, 100);
 
@@ -301,7 +418,7 @@
         ? `DISABLED (site=${r.breakdown && r.breakdown.site})`
         : `score=${r.score}/100, words=${r.wordCount}`;
       const note = settingsLoaded ? '' : ' (settings not yet loaded)';
-      console.log(`[NOAIS content] v1.0.0 loaded on ${location.href}; phrases: ${r.count}, ${status}, sensitivity: ${effective.sensitivity}, hardMode: ${effective.hardMode}${note}`);
+      console.log(`[NOAIS content] v1.1.0 loaded on ${location.href}; phrases: ${r.count}, ${status}, sensitivity: ${effective.sensitivity}, hardMode: ${effective.hardMode}${note}`);
     } catch (e) { /* innerText may throw on detached documents; ignore */ }
   }
 })();

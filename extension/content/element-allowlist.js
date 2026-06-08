@@ -160,5 +160,6 @@
   }
   if (typeof root !== 'undefined' && root) {
     root.NOAIS_ELEMENT_ALLOWLIST = api;
+    try { console.log('[NOAIS] NOAIS_ELEMENT_ALLOWLIST module ready'); } catch (_e) { /* ignore */ }
   }
 })(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null));
