@@ -356,7 +356,7 @@ fi
 
 # --- Manifest sanity ---
 VER=$(jq -r '.version' "$EXT/manifest.json")
-[ "$VER" = "1.1.1" ] && ok "manifest version is 1.1.1" || ko "version" "expected 1.1.1, got $VER"
+[ "$VER" = "1.1.2" ] && ok "manifest version is 1.1.2" || ko "version" "expected 1.1.2, got $VER"
 # v0.5+v0.6+v0.7: manifest must include adapters in content_scripts
 if jq -e '.content_scripts[0].css | index("styles/adapters.css")' "$EXT/manifest.json" >/dev/null; then
   ok "manifest content_scripts.css includes styles/adapters.css"

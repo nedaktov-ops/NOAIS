@@ -16,8 +16,8 @@ const CSS = fs.readFileSync(path.join(ROOT, 'extension/styles/adapters.css'), 'u
 const tests = [];
 
 tests.push({
-  name: 'adapter-structure: manifest version is 1.1.1',
-  fn: () => assert.strictEqual(MANIFEST.version, '1.1.1')
+  name: 'adapter-structure: manifest version is 1.1.2',
+  fn: () => assert.strictEqual(MANIFEST.version, '1.1.2')
 });
 
 tests.push({
