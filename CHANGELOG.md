@@ -5,6 +5,35 @@ All notable changes to NOAIS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.2] - 2026-06-09
+
+### Fixed
+
+- **Per-site toggle now actually works when global is OFF** — `NOAIS_TOGGLE_SITE` handler in content.js flipped the wrong branch: `delete overrides[hostname]` when global was disabled was a no-op (site stayed disabled). Now flips the site's own override directly (`false` ↔ `true`), independent of global state.
+- **`sendResponse` async pattern fixed** — `NOAIS_TOGGLE_SITE` handler was calling `sendResponse` synchronously before the `chrome.storage.local.set` callback completed. Now `return true` keeps the channel open and `sendResponse` fires inside the callback with the actual result.
+- **Keyboard shortcut race condition fixed** — rapid Ctrl+Shift+A presses caused read-modify-write to lose state. Added 150ms debounce lock in `keyboard-shortcut.js`.
+- **Popup toggle race condition fixed** — rapid clicks on the per-site toggle button caused optimistic UI to flip incorrectly. Added 200ms debounce lock in `popup.js`.
+- **Popup toggle silent failure fixed** — `lastError` was silently swallowed with no user feedback. Now logs a warning and renders an error state in the popup.
+- **Sync error handling added** — `saveSensitivity` and `saveHardModeSites` now fall back to `chrome.storage.local` when `chrome.storage.sync` fails (quota exceeded, disabled, network error). Previously writes vanished silently.
+- **Sync banner now re-evaluates on every render** — previously only checked API presence once at init, so disabling sync mid-session left the banner stuck on "on".
+- **`tabs.onRemoved` storage retry** — if `chrome.storage.local.get` fails during tab close (browser shutdown race), the cleanup now retries once after 100ms instead of silently leaking stale override data.
+- **`getTabId()` hardcoded `0` stub removed** — test stub that leaked into production. The badge tooltip now relies on `sender.tab.id` in the background, which is the correct source.
+- **Misleading error string fixed** — "sync read failed" was logged inside the local fallback branch in `options.js`. Now correctly says "local read failed".
+
+### Changed
+
+- `extension/background/background.js` — `onInstalled` fallback version changed from `'1.1.1'` to `'unknown'` (never lie about version if `getManifest` fails). `tabs.onRemoved` now retries on storage failure. Extracted `cleanupTabData` helper.
+- `extension/background/keyboard-shortcut.js` — 150ms debounce lock on `toggleCurrentSite`.
+- `extension/content/content.js` — `NOAIS_TOGGLE_SITE` handler rewritten: correct toggle logic, async `sendResponse` pattern, `return true`. Removed hardcoded `getTabId` stub.
+- `extension/options/options.js` — sync writes fall back to local on error. Sync banner re-evaluates on every render. Error string corrected.
+- `extension/popup/popup.js` — 200ms debounce lock on toggle button. `lastError` now surfaces to user. `queryActiveTab` error path resets site status.
+- `extension/sidepanel/why.js` — comment corrected: messages come from `content.js`, not `background.js`.
+- `tests/background.test.js` — updated fallback version expectation from `'1.1.1'` to `'unknown'`.
+
+### Security
+
+- No new vulnerabilities introduced. All existing CSP, XSS discipline, and storage routing unchanged.
+
 ## [1.1.1] - 2026-06-08
 
 ### Fixed
