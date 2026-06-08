@@ -15,6 +15,8 @@ TMPDIR5="$(mktemp -d)"
 TMPDIR6="$(mktemp -d)"
 TMPDIR7="$(mktemp -d)"
 TMPDIR8="$(mktemp -d)"
+TMPDIR9="$(mktemp -d)"
+TMPDIR10="$(mktemp -d)"
 STDOUT_LOG="$(mktemp)"
 STDERR_LOG1="$(mktemp)"
 STDERR_LOG2="$(mktemp)"
@@ -24,14 +26,16 @@ STDERR_LOG5="$(mktemp)"
 STDERR_LOG6="$(mktemp)"
 STDERR_LOG7="$(mktemp)"
 STDERR_LOG8="$(mktemp)"
+STDERR_LOG9="$(mktemp)"
+STDERR_LOG10="$(mktemp)"
 PASS=0
 FAIL=0
 
 cleanup() {
   rm -rf "$TMPDIR1" "$TMPDIR2" "$TMPDIR3" "$TMPDIR4" "$TMPDIR5" "$TMPDIR6" \
-         "$TMPDIR7" "$TMPDIR8" "$STDOUT_LOG" \
-         "$STDERR_LOG1" "$STDERR_LOG2" "$STDERR_LOG3" "$STDERR_LOG4" "$STDERR_LOG5" "$STDERR_LOG6" \
-         "$STDERR_LOG7" "$STDERR_LOG8"
+         "$TMPDIR7" "$TMPDIR8" "$TMPDIR9" "$TMPDIR10" "$STDOUT_LOG" \
+         "$STDERR_LOG1" "$STDERR_LOG2" "$STDERR_LOG3" "$STDERR_LOG4" "$STDERR_LOG5" \
+         "$STDERR_LOG6" "$STDERR_LOG7" "$STDERR_LOG8" "$STDERR_LOG9" "$STDERR_LOG10"
 }
 trap cleanup EXIT
 
@@ -301,6 +305,59 @@ else
   ko "manifest sidePanel perm" "sidePanel permission missing"
 fi
 
+# --- Run 9: page counter fixture (v1.1) ---
+echo ""
+echo "--- Run 9 (page counter fixture, v1.1) ---"
+run_chromium "$TMPDIR9" "$STDERR_LOG9" "file://$REPO/tests/fixtures/test-page-counter.html"
+assert_log_contains '\[NOAIS content\] v1\.0\.0 loaded' "$STDERR_LOG9" \
+  "content script loaded on page-counter fixture"
+if grep -qE 'noais-page-counter' "$STDOUT_LOG"; then
+  ok "page counter widget markup is in the DOM"
+else
+  ko "page counter widget" "no 'noais-page-counter' string in dumped DOM"
+fi
+if grep -qE 'NOAIS' "$STDOUT_LOG" && grep -qE 'noais-page-counter' "$STDOUT_LOG"; then
+  ok "page counter shows the NOAIS label"
+else
+  ko "page counter label" "NOAIS label not visible alongside counter markup"
+fi
+if grep -qE 'data-noais-page-counter' "$STDOUT_LOG"; then
+  ok "page counter host has data-noais-page-counter attribute"
+else
+  ko "page counter data-attr" "data-noais-page-counter attribute missing"
+fi
+if grep -qE 'data-noais-breakdown' "$STDOUT_LOG"; then
+  ok "at least one badge carries data-noais-breakdown (v1.1 createBadge refactor)"
+else
+  ko "badge breakdown attr" "no badge has data-noais-breakdown — createBadge refactor not wired"
+fi
+
+# --- Run 10: element-allowlist fixture (v1.1) ---
+echo ""
+echo "--- Run 10 (element-allowlist fixture, v1.1) ---"
+run_chromium "$TMPDIR10" "$STDERR_LOG10" "file://$REPO/tests/fixtures/test-element-allowlist.html"
+assert_log_contains '\[NOAIS content\] v1\.0\.0 loaded' "$STDERR_LOG10" \
+  "content script loaded on element-allowlist fixture"
+assert_log_contains 'NOAIS_ELEMENT_ALLOWLIST module ready' "$STDERR_LOG10" \
+  "element-allowlist module loaded and self-identifies"
+assert_log_contains 'element-allowlist add ok' "$STDERR_LOG10" \
+  "element-allowlist.add() succeeded in the browser context"
+assert_log_contains 'element-allowlist isAllowed true' "$STDERR_LOG10" \
+  "element-allowlist.isAllowed() returned true after add() (round-trip)"
+if jq -e '.content_scripts[0].js | index("content/page-counter.js")' "$EXT/manifest.json" >/dev/null \
+   && jq -e '.content_scripts[0].js | index("content/badge-tooltip.js")' "$EXT/manifest.json" >/dev/null \
+   && jq -e '.content_scripts[0].js | index("content/element-allowlist.js")' "$EXT/manifest.json" >/dev/null; then
+  ok "manifest content_scripts.js includes the 3 new v1.1 files"
+else
+  ko "manifest v1.1 files" "page-counter.js / badge-tooltip.js / element-allowlist.js missing"
+fi
+if jq -e '.content_scripts[0].css | index("content/page-counter.css")' "$EXT/manifest.json" >/dev/null \
+   && jq -e '.content_scripts[0].css | index("content/badge-tooltip.css")' "$EXT/manifest.json" >/dev/null; then
+  ok "manifest content_scripts.css includes page-counter.css + badge-tooltip.css"
+else
+  ko "manifest v1.1 css" "page-counter.css / badge-tooltip.css missing"
+fi
+
 # --- Manifest sanity ---
 VER=$(jq -r '.version' "$EXT/manifest.json")
 [ "$VER" = "1.1.0" ] && ok "manifest version is 1.1.0" || ko "version" "expected 1.1.0, got $VER"
@@ -345,6 +402,12 @@ if [ $FAIL -gt 0 ]; then
   echo ""
   echo "  Run 8 stderr (last 20 lines):"
   tail -20 "$STDERR_LOG8" | sed 's/^/    /'
+  echo ""
+  echo "  Run 9 stderr (last 20 lines):"
+  tail -20 "$STDERR_LOG9" | sed 's/^/    /'
+  echo ""
+  echo "  Run 10 stderr (last 20 lines):"
+  tail -20 "$STDERR_LOG10" | sed 's/^/    /'
   exit 1
 fi
 exit 0

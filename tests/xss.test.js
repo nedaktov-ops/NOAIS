@@ -151,19 +151,51 @@ tests.push({
   },
 });
 
+// --- v1.1 XSS tests (merged from settings + UI branches) ---
+
+tests.push({
+  name: 'XSS: content/page-counter.js is innerHTML-free (v1.1)',
+  fn: () => {
+    const file = path.join(__dirname, '..', 'extension', 'content', 'page-counter.js');
+    assert.ok(fs.existsSync(file), 'content/page-counter.js must exist (v1.1)');
+    const src = fs.readFileSync(file, 'utf8');
+    const codeOnly = src.split('\n').map((l) => l.replace(/\/\/.*$/, '')).join('\n').replace(/(['"`])(?:(?=(\\?))\2.)*?\1/g, '""');
+    const matches = codeOnly.match(/\.innerHTML\s*=/g) || [];
+    assert.strictEqual(matches.length, 0, 'page-counter.js must not use .innerHTML assignment');
+  },
+});
+
+tests.push({
+  name: 'XSS: content/badge-tooltip.js is innerHTML-free (v1.1)',
+  fn: () => {
+    const file = path.join(__dirname, '..', 'extension', 'content', 'badge-tooltip.js');
+    assert.ok(fs.existsSync(file), 'content/badge-tooltip.js must exist (v1.1)');
+    const src = fs.readFileSync(file, 'utf8');
+    const codeOnly = src.split('\n').map((l) => l.replace(/\/\/.*$/, '')).join('\n').replace(/(['"`])(?:(?=(\\?))\2.)*?\1/g, '""');
+    const matches = codeOnly.match(/\.innerHTML\s*=/g) || [];
+    assert.strictEqual(matches.length, 0, 'badge-tooltip.js must not use .innerHTML assignment');
+  },
+});
+
+tests.push({
+  name: 'XSS: content/element-allowlist.js is innerHTML-free (v1.1)',
+  fn: () => {
+    const file = path.join(__dirname, '..', 'extension', 'content', 'element-allowlist.js');
+    assert.ok(fs.existsSync(file), 'content/element-allowlist.js must exist (v1.1)');
+    const src = fs.readFileSync(file, 'utf8');
+    const codeOnly = src.split('\n').map((l) => l.replace(/\/\/.*$/, '')).join('\n').replace(/(['"`])(?:(?=(\\?))\2.)*?\1/g, '""');
+    const matches = codeOnly.match(/\.innerHTML\s*=/g) || [];
+    assert.strictEqual(matches.length, 0, 'element-allowlist.js must not use .innerHTML assignment');
+  },
+});
+
 tests.push({
   name: 'XSS: v1.1 sync-helper.js is innerHTML-free',
   fn: () => {
     const file = path.join(__dirname, '..', 'extension', 'core', 'sync-helper.js');
-    if (!fs.existsSync(file)) {
-      throw new Error('core/sync-helper.js not found');
-    }
+    assert.ok(fs.existsSync(file), 'core/sync-helper.js must exist (v1.1)');
     const src = fs.readFileSync(file, 'utf8');
-    const codeOnly = src
-      .split('\n')
-      .map((line) => line.replace(/\/\/.*$/, ''))
-      .join('\n')
-      .replace(/(['"`])(?:(?=(\\?))\2.)*?\1/g, '""');
+    const codeOnly = src.split('\n').map((l) => l.replace(/\/\/.*$/, '')).join('\n').replace(/(['"`])(?:(?=(\\?))\2.)*?\1/g, '""');
     const matches = codeOnly.match(/\.innerHTML\s*=/g) || [];
     assert.strictEqual(matches.length, 0, 'sync-helper.js must not use .innerHTML');
   },
@@ -173,15 +205,9 @@ tests.push({
   name: 'XSS: v1.1 sidepanel/why.js is innerHTML-free',
   fn: () => {
     const file = path.join(__dirname, '..', 'extension', 'sidepanel', 'why.js');
-    if (!fs.existsSync(file)) {
-      throw new Error('sidepanel/why.js not found');
-    }
+    assert.ok(fs.existsSync(file), 'sidepanel/why.js must exist (v1.1)');
     const src = fs.readFileSync(file, 'utf8');
-    const codeOnly = src
-      .split('\n')
-      .map((line) => line.replace(/\/\/.*$/, ''))
-      .join('\n')
-      .replace(/(['"`])(?:(?=(\\?))\2.)*?\1/g, '""');
+    const codeOnly = src.split('\n').map((l) => l.replace(/\/\/.*$/, '')).join('\n').replace(/(['"`])(?:(?=(\\?))\2.)*?\1/g, '""');
     const matches = codeOnly.match(/\.innerHTML\s*=/g) || [];
     assert.strictEqual(matches.length, 0, 'why.js must not use .innerHTML');
   },
@@ -191,15 +217,9 @@ tests.push({
   name: 'XSS: v1.1 options/welcome.js is innerHTML-free',
   fn: () => {
     const file = path.join(__dirname, '..', 'extension', 'options', 'welcome.js');
-    if (!fs.existsSync(file)) {
-      throw new Error('options/welcome.js not found');
-    }
+    assert.ok(fs.existsSync(file), 'options/welcome.js must exist (v1.1)');
     const src = fs.readFileSync(file, 'utf8');
-    const codeOnly = src
-      .split('\n')
-      .map((line) => line.replace(/\/\/.*$/, ''))
-      .join('\n')
-      .replace(/(['"`])(?:(?=(\\?))\2.)*?\1/g, '""');
+    const codeOnly = src.split('\n').map((l) => l.replace(/\/\/.*$/, '')).join('\n').replace(/(['"`])(?:(?=(\\?))\2.)*?\1/g, '""');
     const matches = codeOnly.match(/\.innerHTML\s*=/g) || [];
     assert.strictEqual(matches.length, 0, 'welcome.js must not use .innerHTML');
   },
@@ -209,15 +229,9 @@ tests.push({
   name: 'XSS: v1.1 keyboard-shortcut.js (background) is innerHTML-free',
   fn: () => {
     const file = path.join(__dirname, '..', 'extension', 'background', 'keyboard-shortcut.js');
-    if (!fs.existsSync(file)) {
-      throw new Error('background/keyboard-shortcut.js not found');
-    }
+    assert.ok(fs.existsSync(file), 'background/keyboard-shortcut.js must exist (v1.1)');
     const src = fs.readFileSync(file, 'utf8');
-    const codeOnly = src
-      .split('\n')
-      .map((line) => line.replace(/\/\/.*$/, ''))
-      .join('\n')
-      .replace(/(['"`])(?:(?=(\\?))\2.)*?\1/g, '""');
+    const codeOnly = src.split('\n').map((l) => l.replace(/\/\/.*$/, '')).join('\n').replace(/(['"`])(?:(?=(\\?))\2.)*?\1/g, '""');
     const matches = codeOnly.match(/\.innerHTML\s*=/g) || [];
     assert.strictEqual(matches.length, 0, 'keyboard-shortcut.js must not use .innerHTML');
   },
