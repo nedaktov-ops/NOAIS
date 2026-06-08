@@ -83,6 +83,10 @@
     "message": "Disable on this site",
     "description": "Per-site disable button shown in the popup when the current site is one of the curated platforms (v1.1)."
   },
+  "popup_disable_site": {
+    "message": "Disable on this site",
+    "description": "Per-site disable button shown in the popup when the current site is currently enabled (v1.1.2)."
+  },
   "popup_enable_site": {
     "message": "Enable on this site",
     "description": "Per-site enable button shown in the popup when the current site is currently disabled (v1.1)."

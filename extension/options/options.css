@@ -134,9 +134,9 @@ header {
 }
 
 .sensitivity-value.zero { color: #6b7280; }
-.sensitivity-value.low  { color: #10b981; }
-.sensitivity-value.mid  { color: #f59e0b; }
-.sensitivity-value.high { color: #ef4444; }
+.sensitivity-value.low  { color: #059669; }
+.sensitivity-value.mid  { color: #d97706; }
+.sensitivity-value.high { color: #dc2626; }
 
 .saved-toast {
   display: none;

@@ -190,15 +190,18 @@
     if (!hostname) {
       siteStatusEl.classList.add('na');
       siteStatusEl.textContent = 'N/A';
+      updateToggleButton('', false);
       return;
     }
     siteHostnameEl.textContent = hostname;
     if (effective && effective.enabled) {
       siteStatusEl.classList.add('on');
       siteStatusEl.textContent = 'ON';
+      updateToggleButton(hostname, true);
     } else {
       siteStatusEl.classList.add('off');
       siteStatusEl.textContent = 'OFF';
+      updateToggleButton(hostname, false);
     }
   }
 
@@ -259,6 +262,15 @@
 
   // ----- Toggle current site (per-site disable) --------------------------
 
+  function updateToggleButton(hostname, enabled) {
+    if (!toggleSiteEl) return;
+    if (enabled) {
+      toggleSiteEl.textContent = t('popup_disable_site');
+    } else {
+      toggleSiteEl.textContent = t('popup_enable_site');
+    }
+  }
+
   function onToggleSite() {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const tab = Array.isArray(tabs) && tabs[0];
@@ -266,8 +278,15 @@
       const url = tab.url || '';
       const hostname = settings ? settings.parseHostname(url) : '';
       try {
-        chrome.tabs.sendMessage(tab.id, { type: TOGGLE_SITE_TYPE, hostname });
-        try { window.close(); } catch (_e) { /* ignore */ }
+        chrome.tabs.sendMessage(tab.id, { type: TOGGLE_SITE_TYPE, hostname }, (response) => {
+          if (chrome.runtime.lastError) return;
+          // Update button text to reflect new state.
+          const wasEnabled = toggleSiteEl.textContent === t('popup_disable_site') ||
+                             toggleSiteEl.textContent === '__MSG_popup_toggle_site__';
+          updateToggleButton(hostname, !wasEnabled);
+          // Re-query the tab to refresh the score display.
+          queryActiveTab();
+        });
       } catch (err) {
         console.error('NOAIS popup: failed to send NOAIS_TOGGLE_SITE', err);
       }

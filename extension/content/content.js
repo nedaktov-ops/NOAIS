@@ -361,6 +361,39 @@
       }
       return false;
     }
+    // v1.1.2: Toggle site override (per-site enable/disable from popup).
+    if (message.type === 'NOAIS_TOGGLE_SITE') {
+      try {
+        const hostname = message.hostname || (location.hostname || '').toLowerCase();
+        chrome.storage.local.get(['noais_site_overrides', 'noais_enabled'], (result) => {
+          const overrides = (result && result.noais_site_overrides && typeof result.noais_site_overrides === 'object')
+            ? Object.assign({}, result.noais_site_overrides)
+            : {};
+          const globalEnabled = (result && result.noais_enabled) !== false;
+          // Toggle: if globally enabled, disable this site; if globally disabled, enable it.
+          if (globalEnabled) {
+            overrides[hostname] = false;
+          } else {
+            delete overrides[hostname]; // remove override so global default applies
+          }
+          chrome.storage.local.set({ noais_site_overrides: overrides }, () => {
+            if (chrome.runtime.lastError) return;
+            refreshEffective();
+            // Re-scan with the new effective settings.
+            setTimeout(() => {
+              resetScoredElements();
+              const adapter = pickAdapter(getEffectiveHostname());
+              if (adapter) scanWithAdapter(adapter);
+              persistPageScore();
+            }, 50);
+          });
+        });
+        sendResponse({ ok: true });
+      } catch (err) {
+        sendResponse({ ok: false, error: String(err) });
+      }
+      return false;
+    }
     return false;
   });
 

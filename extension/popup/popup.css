@@ -137,15 +137,15 @@ input:focus-visible + .slider {
 }
 
 .scan-count.zero {
-  color: #10b981;
+  color: #059669;
 }
 
 .scan-count.low {
-  color: #f59e0b;
+  color: #d97706;
 }
 
 .scan-count.high {
-  color: #ef4444;
+  color: #dc2626;
 }
 
 .scan-count.error {
@@ -168,9 +168,9 @@ input:focus-visible + .slider {
   margin: 2px 0 8px 0;
 }
 
-.score-value.zero { color: #10b981; }
-.score-value.low  { color: #f59e0b; }
-.score-value.high { color: #ef4444; }
+.score-value.zero { color: #059669; }
+.score-value.low  { color: #d97706; }
+.score-value.high { color: #dc2626; }
 .score-value.error { color: #9ca3af; font-size: 16px; font-weight: 600; }
 
 .score-bar {
@@ -190,9 +190,9 @@ input:focus-visible + .slider {
   border-radius: 3px;
 }
 
-.score-bar-fill.zero { background: #10b981; }
-.score-bar-fill.low  { background: #f59e0b; }
-.score-bar-fill.high { background: #ef4444; }
+.score-bar-fill.zero { background: #059669; }
+.score-bar-fill.low  { background: #d97706; }
+.score-bar-fill.high { background: #dc2626; }
 
 .word-count {
   font-size: 10px;
