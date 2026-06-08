@@ -5,6 +5,18 @@ All notable changes to NOAIS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-06-08
+
+### Fixed
+
+- **Background SW no longer logs "installed" on browser wakeup** — `chrome.runtime.onInstalled` fires with `reason: 'chrome_update'` and `reason: 'shared_module_update'` every time Chromium restarts. The listener now early-returns for any reason other than `'install'` or `'update'`, so only actual extension lifecycle events produce a log line. The welcome page still opens only on first install.
+- **Hard mode dim/blur is now removed per-element when allowlisted** — Previously, clicking "Allowlist this text" in the badge tooltip stored the allowlist entry but left the `noais-hard` class on the element (dim + blur persisted until next page load). The tooltip now walks up to the decorated element and removes `noais-hard` immediately, so the comment reverts to normal visibility right after allowlisting.
+
+### Changed
+
+- `extension/background/background.js` — `onInstalled` listener guards for `reason === 'install' || reason === 'update'`.
+- `extension/content/badge-tooltip.js` — `onAllowlistClick` removes `noais-hard` from the decorated element after persisting the allowlist entry.
+
 ## [1.1.0] - 2026-06-07
 
 ### User-facing polish
