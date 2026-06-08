@@ -26,6 +26,12 @@ try {
 // ----- One-shot install log + first-run welcome -----
 chrome.runtime.onInstalled.addListener((details) => {
   const reason = (details && details.reason) ? details.reason : 'unknown';
+
+  // Only log on actual extension lifecycle events (install/update).
+  // chrome_update and shared_module_update fire on browser wakeup and
+  // are misleading — the extension itself has not changed.
+  if (reason !== 'install' && reason !== 'update') return;
+
   let version = '1.1.0';
   try {
     if (chrome.runtime && typeof chrome.runtime.getManifest === 'function') {

@@ -208,26 +208,31 @@
     function onAllowlistClick() {
       if (!currentBadge) return;
       const host = getHostname();
-      // Try to recover the text the badge was attached to. We do this by
-      // walking up to the decorated element and reading its textContent.
+      // Walk up to the decorated element (the one with [data-noais-scored="1"]).
+      // We need it to extract the text for the allowlist AND to remove
+      // the hard-mode dim/blur class so the element reverts to normal.
+      let decoratedEl = null;
       let text = '';
       try {
-        // The badge is appended to (or a child of) the decorated element.
-        // We walk up to the first element with [data-noais-scored="1"].
         let n = currentBadge;
         while (n) {
           if (n.dataset && n.dataset.noaisScored === '1') {
+            decoratedEl = n;
             text = n.textContent || '';
             break;
           }
           n = n.parentNode;
         }
         if (!text) text = currentBadge.textContent || '';
-        // Trim and truncate to match the hash input.
         text = String(text).slice(0, 200);
       } catch (_e) { text = ''; }
       if (allowlist && typeof allowlist.add === 'function' && text) {
         try { allowlist.add(host, text); } catch (_e) { /* ignore */ }
+      }
+      // v1.1.1: Remove hard-mode dim/blur from the decorated element so the
+      // allowlisted comment reverts to normal visibility immediately.
+      if (decoratedEl && decoratedEl.classList) {
+        try { decoratedEl.classList.remove('noais-hard'); } catch (_e) { /* ignore */ }
       }
       try { currentBadge.dataset.noaisAllowlisted = '1'; } catch (_e) { /* ignore */ }
       hide();
