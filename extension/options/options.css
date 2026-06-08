@@ -537,6 +537,28 @@ footer {
     background: #92400e;
   }
 
+  .title {
+    color: #a5b4fc;
+  }
+
+  .subtitle {
+    color: #9ca3af;
+  }
+
+  .primary-button {
+    background: #6366f1;
+  }
+  .primary-button:hover {
+    background: #818cf8;
+  }
+
+  .sync-status.on {
+    color: #34d399;
+  }
+  .sync-status.off {
+    color: #f87171;
+  }
+
   .version {
     color: #6b7280;
   }

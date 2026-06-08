@@ -165,6 +165,17 @@ footer {
     background: #312e81;
   }
 
+  .title {
+    color: #a5b4fc;
+  }
+
+  .primary-button {
+    background: #6366f1;
+  }
+  .primary-button:hover {
+    background: #818cf8;
+  }
+
   .subtitle {
     color: #9ca3af;
   }

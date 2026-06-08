@@ -359,6 +359,34 @@ footer {
   .subtitle {
     color: #9ca3af;
   }
+  .score-value {
+    color: #f9fafb;
+  }
+  .score-value.zero { color: #34d399; }
+  .score-value.low  { color: #fbbf24; }
+  .score-value.high { color: #f87171; }
+  .score-value.error { color: #6b7280; }
+
+  .score-bar {
+    background: #374151;
+  }
+
+  .ghost-button {
+    border-color: #6b7280;
+    color: #d1d5db;
+  }
+  .ghost-button:hover {
+    background: #374151;
+    border-color: #9ca3af;
+  }
+
+  .footer-link {
+    color: #a5b4fc;
+  }
+  .footer-link:hover {
+    color: #c7d2fe;
+  }
+
   .version {
     color: #6b7280;
   }
