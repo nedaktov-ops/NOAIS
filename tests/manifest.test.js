@@ -16,9 +16,9 @@ const MANIFEST = JSON.parse(
 const tests = [];
 
 tests.push({
-  name: 'manifest: version is 1.1.0',
+  name: 'manifest: version is 1.1.1',
   fn: () => {
-    assert.strictEqual(MANIFEST.version, '1.1.0');
+    assert.strictEqual(MANIFEST.version, '1.1.1');
   },
 });
 

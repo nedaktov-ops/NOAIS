@@ -32,7 +32,7 @@ chrome.runtime.onInstalled.addListener((details) => {
   // are misleading — the extension itself has not changed.
   if (reason !== 'install' && reason !== 'update') return;
 
-  let version = '1.1.0';
+  let version = '1.1.1';
   try {
     if (chrome.runtime && typeof chrome.runtime.getManifest === 'function') {
       const m = chrome.runtime.getManifest();
