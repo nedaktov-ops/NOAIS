@@ -81,6 +81,8 @@
       // Outer card
       const card = document.createElement('div');
       card.className = 'noais-tooltip';
+      card.setAttribute('role', 'tooltip');
+      card.setAttribute('aria-hidden', 'true');
       const style = document.createElement('style');
       style.textContent = [
         '.noais-tooltip {',
@@ -257,6 +259,15 @@
       for (const b of allowlistBtns) {
         if (b.addEventListener) b.addEventListener('click', onAllowlistClick);
       }
+      // Keyboard: Escape to close tooltip.
+      if (root && root.addEventListener) {
+        root.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape') {
+            hide();
+            if (currentBadge && currentBadge.focus) currentBadge.focus();
+          }
+        });
+      }
     }
 
     function positionPopup(p, badge) {
@@ -289,8 +300,7 @@
       }
       return popup;
     }
-
-    function show(badge, breakdown) {
+function show(badge, breakdown) {
       // Re-hover closes the old one before opening the new one.
       if (currentBadge && currentBadge !== badge) {
         hide();
@@ -302,6 +312,7 @@
       currentBadge = badge || null;
       const p = ensurePopup();
       if (!p) return;
+
       let parsedBreakdown = breakdown;
       if (!parsedBreakdown && badge && badge.dataset && badge.dataset.noaisBreakdown) {
         try { parsedBreakdown = JSON.parse(badge.dataset.noaisBreakdown); }
@@ -313,6 +324,7 @@
       positionPopup(p, badge);
       // Reveal
       if (p.host && p.host.style) p.host.style.display = '';
+      if (p.card) p.card.setAttribute('aria-hidden', 'false');
     }
 
     function hide() {
@@ -323,6 +335,7 @@
       if (popup && popup.host && popup.host.style) {
         popup.host.style.display = 'none';
       }
+      if (popup && popup.card) popup.card.setAttribute('aria-hidden', 'true');
       currentBadge = null;
     }
 
@@ -332,6 +345,31 @@
         try { popup.host.parentNode.removeChild(popup.host); } catch (_e) { /* ignore */ }
       }
       popup = null;
+    }
+
+    function onBadgeFocus() {
+      const badge = this;
+      if (hoverTimer != null) {
+        try { clearTimeout(hoverTimer); } catch (_e) { /* ignore */ }
+      }
+      hoverTimer = setTimeout(() => {
+        hoverTimer = null;
+        let breakdown = null;
+        if (badge && badge.dataset && badge.dataset.noaisBreakdown) {
+          try { breakdown = JSON.parse(badge.dataset.noaisBreakdown); }
+          catch (_e) { breakdown = null; }
+        }
+        show(badge, breakdown);
+      }, HOVER_DELAY_MS);
+    }
+
+    function onBadgeBlur() {
+      if (hoverTimer != null) {
+        try { clearTimeout(hoverTimer); } catch (_e) { /* ignore */ }
+        hoverTimer = null;
+      }
+      // Small delay to allow click on tooltip buttons.
+      setTimeout(hide, 150);
     }
 
     function onBadgeMouseEnter() {
@@ -362,8 +400,13 @@
       if (!badge || typeof badge.addEventListener !== 'function') return;
       if (attached.has(badge)) return;
       attached.add(badge);
+      // Ensure badge is focusable for keyboard access.
+      if (!badge.hasAttribute('tabindex')) badge.setAttribute('tabindex', '0');
       try { badge.addEventListener('mouseenter', onBadgeMouseEnter); } catch (_e) { /* ignore */ }
       try { badge.addEventListener('mouseleave', onBadgeMouseLeave); } catch (_e) { /* ignore */ }
+      // Keyboard: focus/blur to show/hide tooltip.
+      try { badge.addEventListener('focus', onBadgeFocus); } catch (_e) { /* ignore */ }
+      try { badge.addEventListener('blur', onBadgeBlur); } catch (_e) { /* ignore */ }
     }
 
     function detach(badge) {

@@ -207,6 +207,10 @@
       // Card
       const card = document.createElement('div');
       card.className = 'noais-page-counter';
+      card.setAttribute('role', 'button');
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('aria-expanded', 'false');
+      card.setAttribute('aria-label', 'NOAIS page counter');
       if (sh.appendChild) sh.appendChild(card);
 
       // Drag handle (hidden on touch devices — see applyTouchClass)
@@ -308,24 +312,36 @@
       // integration can read `_corners` from the handle.
     }
 
+    function getClientXY(event) {
+      if (event.touches && event.touches.length > 0) {
+        return { clientX: event.touches[0].clientX, clientY: event.touches[0].clientY };
+      }
+      return { clientX: event.clientX || 0, clientY: event.clientY || 0 };
+    }
+
     function onDragStart(event) {
       if (!event) return;
       try { event.stopPropagation(); } catch (_e) {}
       if (event.preventDefault) { try { event.preventDefault(); } catch (_e) {} }
-  dragState = { startX: event.clientX || 0, startY: event.clientY || 0, moved: false };
+      const xy = getClientXY(event);
+  dragState = { startX: xy.clientX, startY: xy.clientY, moved: false };
   // Bind on the captured document so the drag survives even if the cursor
   // leaves the widget. Uses docEl (not the closure `document`) so tests
   // that inject opts.document get the right event target.
   if (docEl && docEl.addEventListener) {
     docEl.addEventListener('mousemove', onDragMove);
     docEl.addEventListener('mouseup', onDragEnd);
+    docEl.addEventListener('touchmove', onDragMove, { passive: false });
+    docEl.addEventListener('touchend', onDragEnd);
   }
     }
 
     function onDragMove(event) {
       if (!dragState || !event) return;
-      const dx = (event.clientX || 0) - dragState.startX;
-      const dy = (event.clientY || 0) - dragState.startY;
+      if (event.preventDefault) { try { event.preventDefault(); } catch (_e) {} }
+      const xy = getClientXY(event);
+      const dx = xy.clientX - dragState.startX;
+      const dy = xy.clientY - dragState.startY;
       if (Math.abs(dx) > 2 || Math.abs(dy) > 2) dragState.moved = true;
       // Compute new position: if there is an existing currentPosition, add
       // the delta. Otherwise (first drag from a default corner), start
@@ -400,9 +416,18 @@ function onDragEnd(_event) {
       if (rootEl.addEventListener) {
         rootEl.addEventListener('click', onCardClick);
         rootEl.addEventListener('contextmenu', onContextMenu);
+        // Keyboard: Enter or Space to toggle expand.
+        rootEl.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onCardClick(e);
+          }
+        });
       }
       if (dragHandle && dragHandle.addEventListener) {
         dragHandle.addEventListener('mousedown', onDragStart);
+        // Touch support for drag.
+        dragHandle.addEventListener('touchstart', onDragStart, { passive: false });
       }
       // Suppress the next click after drag (we read dragState.moved in
       // onCardClick). Real browsers do this for us; the stub needs a hook.
@@ -440,6 +465,8 @@ function unmount() {
   if (docEl && docEl.removeEventListener) {
     docEl.removeEventListener('mousemove', onDragMove);
     docEl.removeEventListener('mouseup', onDragEnd);
+    docEl.removeEventListener('touchmove', onDragMove);
+    docEl.removeEventListener('touchend', onDragEnd);
   }
       if (rootEl && rootEl.removeEventListener) {
         rootEl.removeEventListener('click', onCardClick);
@@ -474,11 +501,13 @@ function update(n) {
     function expand() {
       if (!rootEl || !rootEl.classList) return;
       rootEl.classList.add('noais-page-counter--expanded');
+      rootEl.setAttribute('aria-expanded', 'true');
       isExpanded = true;
     }
     function collapse() {
       if (!rootEl || !rootEl.classList) return;
       rootEl.classList.remove('noais-page-counter--expanded');
+      rootEl.setAttribute('aria-expanded', 'false');
       isExpanded = false;
     }
 
