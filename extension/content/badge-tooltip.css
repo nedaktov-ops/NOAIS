@@ -1,0 +1,6 @@
+/* NOAIS badge tooltip — v1.1
+ * Styles are injected via Shadow DOM <style> element by badge-tooltip.js.
+ * This file exists for manifest content_scripts registration so the CSS
+ * is listed in the extension's content_scripts manifest entry. The actual
+ * styling is self-contained within the module's Shadow DOM.
+ */

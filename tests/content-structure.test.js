@@ -137,9 +137,30 @@ tests.push({
 });
 
 tests.push({
-  name: 'content.js: v1.0.0 banner in load log',
+  name: 'content.js: v1.1.0 banner in load log',
   fn: () => {
-    assert.match(CONTENT, /v1\.0\.0/);
+    assert.match(CONTENT, /v1\.1\.0/);
+  },
+});
+
+tests.push({
+  name: 'content.js: v1.1 wires up NOAIS_PAGE_COUNTER (uBlock-style page counter)',
+  fn: () => {
+    assert.match(CONTENT, /NOAIS_PAGE_COUNTER/);
+  },
+});
+
+tests.push({
+  name: 'content.js: v1.1 wires up NOAIS_BADGE_TOOLTIP (hover breakdown popup)',
+  fn: () => {
+    assert.match(CONTENT, /NOAIS_BADGE_TOOLTIP/);
+  },
+});
+
+tests.push({
+  name: 'content.js: v1.1 wires up NOAIS_ELEMENT_ALLOWLIST (per-element skip)',
+  fn: () => {
+    assert.match(CONTENT, /NOAIS_ELEMENT_ALLOWLIST/);
   },
 });
 

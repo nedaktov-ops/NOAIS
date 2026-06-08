@@ -41,23 +41,22 @@
     return (element.textContent || '').trim();
   }
 
-  // Decorate: add a severity CSS class + append a badge. Idempotent.
-  function decorate(element, score, phraseCount) {
-    if (!element || !element.classList) return;
-    if (element.dataset.noaisScored === '1') {
-      // Already scored — update severity class in case sensitivity changed,
-      // but don't add a second badge.
-      root.NOAIS_ADAPTERS.helpers.applySeverityClass(element, score);
-      return;
-    }
-    element.dataset.noaisScored = '1';
+// Decorate: add a severity CSS class + append a badge. Idempotent.
+// v1.1: 4th arg `breakdown` is forwarded to createBadge.
+function decorate(element, score, phraseCount, breakdown) {
+  if (!element || !element.classList) return;
+  if (element.dataset.noaisScored === '1') {
     root.NOAIS_ADAPTERS.helpers.applySeverityClass(element, score);
-
-    // Append badge to the content-text child if present, else to the element.
-    const host = element.querySelector('#content-text') || element;
-    const badge = root.NOAIS_ADAPTERS.helpers.createBadge(ADAPTER_ID, score, phraseCount || 0);
-    host.appendChild(badge);
+    return;
   }
+  element.dataset.noaisScored = '1';
+  root.NOAIS_ADAPTERS.helpers.applySeverityClass(element, score);
+
+  // Append badge to the content-text child if present, else to the element.
+  const host = element.querySelector('#content-text') || element;
+  const badge = root.NOAIS_ADAPTERS.helpers.createBadge(ADAPTER_ID, score, phraseCount || 0, breakdown);
+  host.appendChild(badge);
+}
 
   const YouTubeAdapter = {
     id: ADAPTER_ID,

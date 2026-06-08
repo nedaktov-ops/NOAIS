@@ -346,6 +346,83 @@ tests.push({
   }
 });
 
+// ---------- v1.1 — createBadge accepts a breakdown payload (adapters) ----------
+
+tests.push({
+  name: 'adapters/base: createBadge serialises the breakdown payload to data-noais-breakdown (v1.1)',
+  fn: () => {
+    global.document = { createElement(tag) { return el(tag); } };
+    try {
+      const breakdown = {
+        score: 76,
+        burstiness: 0.21,
+        typeTokenRatio: 0.45,
+        entropy: 6.8,
+        hapaxRatio: 0.32,
+        wordCount: 80,
+        count: 0,
+      };
+      const b = helpers.createBadge('youtube', 76, 0, breakdown);
+      assert.strictEqual(b.dataset.noaisBreakdown, JSON.stringify(breakdown),
+        'breakdown is JSON-serialised into the data-noais-breakdown attribute');
+      // Round-trip parse to confirm it's valid JSON with all the expected keys.
+      const parsed = JSON.parse(b.dataset.noaisBreakdown);
+      assert.strictEqual(parsed.score, 76);
+      assert.strictEqual(parsed.burstiness, 0.21);
+      assert.strictEqual(parsed.typeTokenRatio, 0.45);
+      assert.strictEqual(parsed.entropy, 6.8);
+      assert.strictEqual(parsed.hapaxRatio, 0.32);
+    } finally {
+      delete global.document;
+    }
+  }
+});
+
+tests.push({
+  name: 'adapters/base: createBadge omits data-noais-breakdown when no breakdown is passed',
+  fn: () => {
+    global.document = { createElement(tag) { return el(tag); } };
+    try {
+      const b = helpers.createBadge('youtube', 50, 0);
+      // No breakdown was passed — the attribute should either be absent or
+      // empty/undefined. We just check it is not a valid JSON object.
+      const raw = b.dataset.noaisBreakdown;
+      assert.ok(raw == null || raw === '' || raw === undefined,
+        'no breakdown payload → no data-noais-breakdown value (raw=' + raw + ')');
+    } finally {
+      delete global.document;
+    }
+  }
+});
+
+tests.push({
+  name: 'adapters/youtube: decorate passes the breakdown to createBadge (v1.1)',
+  fn: () => {
+    global.document = { createElement(tag) { return el(tag); } };
+    try {
+      const r = el('ytd-comment-renderer');
+      const ct = el('div');
+      ct.attributes.id = 'content-text';
+      ct._textContent = 'long enough text for the badge to be appended here';
+      r.appendChild(ct);
+      const breakdown = {
+        score: 81, burstiness: 0.15, typeTokenRatio: 0.6, entropy: 7.0,
+        hapaxRatio: 0.25, wordCount: 100, count: 1
+      };
+      YouTubeAdapter.decorate(r, 81, 1, breakdown);
+      // Find appended badge
+      const spans = [];
+      findAll(r, 'span', spans);
+      const badge = spans.find((n) => n.className && n.className.includes('noais-badge'));
+      assert.ok(badge, 'badge was appended');
+      assert.strictEqual(badge.dataset.noaisBreakdown, JSON.stringify(breakdown),
+        'breakdown forwarded from decorate() to createBadge()');
+    } finally {
+      delete global.document;
+    }
+  }
+});
+
 if (require.main === module) {
   // Allow direct invocation: node tests/adapters.test.js
   let pass = 0, fail = 0;

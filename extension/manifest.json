@@ -55,9 +55,16 @@
         "core/adapters/facebook.js",
         "core/adapters/instagram.js",
         "core/adapters/tiktok.js",
+        "content/page-counter.js",
+        "content/badge-tooltip.js",
+        "content/element-allowlist.js",
         "content/content.js"
       ],
-      "css": ["styles/adapters.css"],
+      "css": [
+        "styles/adapters.css",
+        "content/page-counter.css",
+        "content/badge-tooltip.css"
+      ],
       "run_at": "document_idle",
       "all_frames": false
     }
