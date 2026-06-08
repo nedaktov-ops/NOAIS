@@ -42,12 +42,19 @@
 
   function setBreakdown(breakdown) {
     if (!breakdown || typeof breakdown !== 'object') return;
-    const v = breakdown.vocab;
-    const p = breakdown.perplexity;
-    const b = breakdown.burstiness;
-    if (typeof v === 'number') setText('breakdown-vocab', String(Math.round(v)));
-    if (typeof p === 'number') setText('breakdown-perplexity', String(Math.round(p)));
-    if (typeof b === 'number') setText('breakdown-burstiness', String(Math.round(b)));
+    // Heuristics produces: typeTokenRatio, entropy, burstiness, hapaxRatio
+    // (long text) or typeTokenRatio, entropy (short text).
+    const ttr = breakdown.typeTokenRatio;
+    const ent = breakdown.entropy;
+    const bur = breakdown.burstiness;
+    const hap = breakdown.hapaxRatio;
+    if (typeof ttr === 'number') setText('breakdown-vocab', String(Math.round(ttr * 100)));
+    if (typeof ent === 'number') setText('breakdown-perplexity', String(Math.round(ent * 10)));
+    if (typeof bur === 'number') setText('breakdown-burstiness', String(Math.round(bur * 100)));
+    if (typeof hap === 'number') {
+      const hapEl = document.getElementById('breakdown-hapax');
+      if (hapEl) hapEl.textContent = String(Math.round(hap * 100));
+    }
   }
 
   function localise() {

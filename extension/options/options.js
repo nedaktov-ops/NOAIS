@@ -159,7 +159,14 @@
             const ov = result && result[STORAGE_KEYS.OVERRIDES];
             currentOverrides = (ov && typeof ov === 'object' && !Array.isArray(ov)) ? ov : {};
             const hm = result && result[STORAGE_KEYS.HARD_MODE_SITES];
-            currentHardModeSites = Array.isArray(hm) ? hm.filter(h => typeof h === 'string' && h.length > 0) : [];
+            // Support both legacy array format (v1.1.0) and current object format {hostname: true}.
+            if (Array.isArray(hm)) {
+              currentHardModeSites = hm.filter(h => typeof h === 'string' && h.length > 0);
+            } else if (hm && typeof hm === 'object') {
+              currentHardModeSites = Object.keys(hm).filter(h => hm[h] === true);
+            } else {
+              currentHardModeSites = [];
+            }
             maybeFinish();
           }
         );
@@ -320,6 +327,23 @@
     badge.setAttribute('aria-hidden', 'true');
     li.appendChild(badge);
 
+    // Hard mode toggle button (v1.1.2).
+    const isHard = currentHardModeSites.includes(row.hostname);
+    const hmButton = document.createElement('button');
+    hmButton.type = 'button';
+    hmButton.className = 'hard-mode-badge';
+    if (isHard) hmButton.classList.add('active');
+    hmButton.textContent = isHard ? t('options_hard_mode_on_short') || 'Hard' : t('options_hard_mode_off_short') || 'Soft';
+    hmButton.setAttribute('aria-label', (isHard ? 'Disable' : 'Enable') + ' hard mode for ' + row.hostname);
+    hmButton.addEventListener('click', () => {
+      if (currentHardModeSites.includes(row.hostname)) {
+        removeHardModeSite(row.hostname);
+      } else {
+        addHardModeSite(row.hostname);
+      }
+    });
+    li.appendChild(hmButton);
+
     // Toggle.
     const toggleLabel = document.createElement('label');
     toggleLabel.className = 'toggle';
@@ -422,16 +446,20 @@
     return li;
   }
 
-  function removeHardModeSite(hostname) {
-    const next = currentHardModeSites.filter(h => h !== hostname);
+  function saveHardModeSites(sitesArray) {
+    // Convert internal array to storage object format {hostname: true}.
+    const obj = {};
+    for (const h of sitesArray) {
+      obj[h] = true;
+    }
     try {
       if (sync) {
-        sync.set(STORAGE_KEYS.HARD_MODE_SITES, next, (err) => {
+        sync.set(STORAGE_KEYS.HARD_MODE_SITES, obj, (err) => {
           if (err) {
             console.error('NOAIS options: hard-mode save failed', err);
             return;
           }
-          currentHardModeSites = next;
+          currentHardModeSites = sitesArray;
           renderHardModeList();
           showSavedToast();
         });
@@ -439,18 +467,33 @@
       }
     } catch (_e) { /* fall through */ }
     try {
-      chrome.storage.local.set({ [STORAGE_KEYS.HARD_MODE_SITES]: next }, () => {
+      chrome.storage.local.set({ [STORAGE_KEYS.HARD_MODE_SITES]: obj }, () => {
         if (chrome.runtime.lastError) {
           console.error('NOAIS options: hard-mode save failed', chrome.runtime.lastError);
           return;
         }
-        currentHardModeSites = next;
+        currentHardModeSites = sitesArray;
         renderHardModeList();
         showSavedToast();
       });
     } catch (err) {
       console.error('NOAIS options: hard-mode save threw', err);
     }
+  }
+
+  function removeHardModeSite(hostname) {
+    const next = currentHardModeSites.filter(h => h !== hostname);
+    saveHardModeSites(next);
+  }
+
+  function addHardModeSite(hostname) {
+    if (!hostname || typeof hostname !== 'string') return false;
+    const normalized = settings.normalizeHostnameInput(hostname);
+    if (!normalized) return false;
+    if (currentHardModeSites.includes(normalized)) return false;
+    const next = currentHardModeSites.concat(normalized);
+    saveHardModeSites(next);
+    return true;
   }
 
   // ----- Add custom site -------------------------------------------------
@@ -561,8 +604,10 @@
         const newHm = changes[STORAGE_KEYS.HARD_MODE_SITES].newValue;
         if (Array.isArray(newHm)) {
           currentHardModeSites = newHm.filter(h => typeof h === 'string' && h.length > 0);
-          needsRender = true;
+        } else if (newHm && typeof newHm === 'object') {
+          currentHardModeSites = Object.keys(newHm).filter(h => newHm[h] === true);
         }
+        needsRender = true;
       }
     } else if (area === 'local') {
       if (changes[STORAGE_KEYS.SENSITIVITY]) {
@@ -583,8 +628,10 @@
         const newHm = changes[STORAGE_KEYS.HARD_MODE_SITES].newValue;
         if (Array.isArray(newHm)) {
           currentHardModeSites = newHm.filter(h => typeof h === 'string' && h.length > 0);
-          needsRender = true;
+        } else if (newHm && typeof newHm === 'object') {
+          currentHardModeSites = Object.keys(newHm).filter(h => newHm[h] === true);
         }
+        needsRender = true;
       }
     }
     if (needsRender) renderAll();

@@ -112,14 +112,14 @@ tests.push({
 });
 
 tests.push({
-  name: 'sync-helper: classifies the 3 sync keys as sync and others as local',
+  name: 'sync-helper: classifies the 2 sync keys as sync and HARD_MODE_SITES as local (v1.1.2)',
   fn: () => {
     const stubs = makeStubs();
     const helper = loadHelper(stubs.chrome);
-    // The 3 sync keys per the v1.1 plan.
+    // The 2 sync keys per the v1.1.2 plan (HARD_MODE_SITES moved to local).
     assert.strictEqual(helper.classify('noais_enabled'), 'sync');
     assert.strictEqual(helper.classify('noais_global_sensitivity'), 'sync');
-    assert.strictEqual(helper.classify('noais_hard_mode_sites'), 'sync');
+    assert.strictEqual(helper.classify('noais_hard_mode_sites'), 'local');
     // Per-site overrides and page counters stay local.
     assert.strictEqual(helper.classify('noais_site_overrides'), 'local');
     assert.strictEqual(helper.classify('noais_page_counter'), 'local');

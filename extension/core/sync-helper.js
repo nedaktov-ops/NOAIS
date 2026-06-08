@@ -3,8 +3,8 @@
 // Tiny shim around chrome.storage that:
 //
 //   1. Routes reads/writes to chrome.storage.sync for the small set of
-//      keys in SYNC_KEYS (per-site toggles, global sensitivity, hard-mode
-//      sites), and to chrome.storage.local for everything else.
+//      keys in SYNC_KEYS (global sensitivity, enabled/disabled toggle),
+//      and to chrome.storage.local for everything else.
 //   2. Surfaces a single onChange event regardless of which area fired.
 //   3. Returns Promises (async/await friendly) but accepts a Node-style
 //      callback as the last argument for legacy callers.

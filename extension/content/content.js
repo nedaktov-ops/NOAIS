@@ -306,7 +306,7 @@
   function onStorageChanged(changes, area) {
     if (area !== 'local') return;
     const keys = ['noais_enabled', 'noais_global_sensitivity', 'noais_site_overrides', 'noais_hard_mode_sites'];
-    for (const k of keys) if (changes[k]) { refreshEffective(); return; }
+    for (const k of keys) if (changes[k]) { refreshEffective(); persistPageScore(); return; }
   }
 
   // Adapter scan loop. Re-runs on MutationObserver events. Throttled to
@@ -394,10 +394,39 @@
       }
       // v1.1: Init + mount the page counter after the initial scan.
       initPageCounter();
+      // v1.1.2: Persist page score for the sidepanel.
+      persistPageScore();
     } catch (e) {
       console.warn('[NOAIS] initial scan failed', e);
     }
   }, 100);
+
+  // ----- Persist page score for sidepanel (v1.1.2) -----
+  // Saves the current page analysis to chrome.storage.local and broadcasts
+  // a NOAIS_PAGE_SCORE message so the sidepanel (why.js) can display it.
+  function persistPageScore() {
+    if (!settingsLoaded) return;
+    try {
+      const result = analyzePage();
+      if (!result.ok) return;
+      const payload = {
+        score: result.score,
+        breakdown: result.breakdown,
+        wordCount: result.wordCount,
+        phraseCount: result.count,
+        hostname: location.hostname,
+      };
+      chrome.storage.local.set({
+        noais_page_score: result.score,
+        noais_page_breakdown: result.breakdown,
+      }, () => {
+        if (chrome.runtime.lastError) return;
+      });
+      try {
+        chrome.runtime.sendMessage({ type: 'NOAIS_PAGE_SCORE', payload: payload });
+      } catch (_e) { /* background may not be ready */ }
+    } catch (_e) { /* non-fatal */ }
+  }
 
   // ----- One-shot load log (testable) -----
   // Wait until storage is loaded so the log is informative. Poll briefly

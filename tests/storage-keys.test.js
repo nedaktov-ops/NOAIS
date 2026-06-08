@@ -56,24 +56,26 @@ tests.push({
 });
 
 tests.push({
-  name: 'storage-keys: SYNC_KEYS has the 3 small user settings only',
+  name: 'storage-keys: SYNC_KEYS has the 2 small user settings only (HARD_MODE_SITES moved to local in v1.1.2)',
   fn: () => {
     const api = loadStorageKeys();
-    assert.strictEqual(api.SYNC_KEYS.length, 3);
+    assert.strictEqual(api.SYNC_KEYS.length, 2);
     assert.ok(api.SYNC_KEYS.includes(api.KEYS.ENABLED));
     assert.ok(api.SYNC_KEYS.includes(api.KEYS.GLOBAL_SENSITIVITY));
-    assert.ok(api.SYNC_KEYS.includes(api.KEYS.HARD_MODE_SITES));
+    // HARD_MODE_SITES moved to LOCAL_KEYS in v1.1.2 (all consumers read/write local).
+    assert.ok(!api.SYNC_KEYS.includes(api.KEYS.HARD_MODE_SITES));
     // SITE_OVERRIDES stays on local to avoid blowing the 8 KB sync quota.
     assert.ok(!api.SYNC_KEYS.includes(api.KEYS.SITE_OVERRIDES));
   },
 });
 
 tests.push({
-  name: 'storage-keys: LOCAL_KEYS covers the rest',
+  name: 'storage-keys: LOCAL_KEYS covers the rest (7 keys including HARD_MODE_SITES)',
   fn: () => {
     const api = loadStorageKeys();
-    assert.strictEqual(api.LOCAL_KEYS.length, 6);
+    assert.strictEqual(api.LOCAL_KEYS.length, 7);
     assert.ok(api.LOCAL_KEYS.includes(api.KEYS.SITE_OVERRIDES));
+    assert.ok(api.LOCAL_KEYS.includes(api.KEYS.HARD_MODE_SITES));
     assert.ok(api.LOCAL_KEYS.includes(api.KEYS.PAGE_COUNTER_ENABLED));
     assert.ok(api.LOCAL_KEYS.includes(api.KEYS.PAGE_COUNTER_POSITION));
     assert.ok(api.LOCAL_KEYS.includes(api.KEYS.ELEMENT_ALLOWLIST));

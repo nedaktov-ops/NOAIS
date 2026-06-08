@@ -175,6 +175,14 @@
     "message": "Remove",
     "description": "Label of the per-site hard-mode Remove button (v1.1)."
   },
+  "options_hard_mode_on_short": {
+    "message": "Hard",
+    "description": "Short label on the hard-mode toggle button when hard mode is active for the site."
+  },
+  "options_hard_mode_off_short": {
+    "message": "Soft",
+    "description": "Short label on the hard-mode toggle button when hard mode is off for the site."
+  },
   "options_saved": {
     "message": "Saved ✓",
     "description": "Toast shown when a setting has been persisted (v1.1)."
@@ -285,12 +293,16 @@
     "message": "Burstiness",
     "description": "Label for the burstiness row in the breakdown."
   },
+  "why_panel_breakdown_hapax": {
+    "message": "Hapax ratio",
+    "description": "Label for the hapax ratio row in the breakdown (v1.1.2)."
+  },
   "why_panel_explain": {
     "message": "How the score is calculated",
     "description": "Heading for the explainer section in the side panel."
   },
   "why_panel_explain_body": {
-    "message": "NOAIS analyses every text node on the page and combines three signals — vocabulary entropy, perplexity, and burstiness — into a single 0-100 score. Higher means more likely to be AI-generated. Everything runs locally in your browser; no text ever leaves your device.",
+    "message": "NOAIS analyses every text node on the page and combines four signals — type-token ratio, Shannon entropy, burstiness, and hapax ratio — into a single 0-100 score. Higher means more likely to be AI-generated. Everything runs locally in your browser; no text ever leaves your device.",
     "description": "Body of the explainer section."
   },
   "why_panel_privacy": {

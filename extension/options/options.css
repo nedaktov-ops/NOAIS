@@ -220,6 +220,43 @@ header {
   flex-shrink: 0;
 }
 
+/* Hard-mode badge toggle button */
+.hard-mode-badge {
+  font-size: 10px;
+  font-weight: 700;
+  font-family: inherit;
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+  padding: 2px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.hard-mode-badge:hover {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+.hard-mode-badge.active {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #f59e0b;
+}
+
+.hard-mode-badge.active:hover {
+  background: #fde68a;
+}
+
+.hard-mode-badge:focus-visible {
+  outline: 2px solid #4F46E5;
+  outline-offset: 2px;
+}
+
 /* Toggle (same pattern as popup) */
 .toggle {
   position: relative;
@@ -477,6 +514,27 @@ footer {
     background: #1f2937;
     color: #f9fafb;
     border-color: #6b7280;
+  }
+
+  .hard-mode-badge {
+    background: #4b5563;
+    color: #d1d5db;
+    border-color: #6b7280;
+  }
+
+  .hard-mode-badge:hover {
+    background: #6b7280;
+    border-color: #9ca3af;
+  }
+
+  .hard-mode-badge.active {
+    background: #78350f;
+    color: #fde68a;
+    border-color: #f59e0b;
+  }
+
+  .hard-mode-badge.active:hover {
+    background: #92400e;
   }
 
   .version {
